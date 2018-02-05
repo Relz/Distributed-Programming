@@ -10,8 +10,8 @@ namespace Backend.Controllers
 	[Route("api/[controller]")]
 	public class ValuesController : Controller
 	{
-		static readonly ConcurrentDictionary<string, string> _data = new ConcurrentDictionary<string, string>();
-		
+		private static readonly ConcurrentDictionary<string, string> _data = new ConcurrentDictionary<string, string>();
+
 		// GET api/values/<id>
 		[HttpGet("{id}")]
 		public string Get(string id)
