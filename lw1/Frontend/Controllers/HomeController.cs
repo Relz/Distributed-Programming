@@ -10,23 +10,10 @@ namespace Frontend.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public IActionResult Index(FormModel formModel)
         {
-            return View();
-        }
-
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            // TODO: Send formModel.Data to Backend, recieve id and display it for user
+            return View(formModel);
         }
 
         public IActionResult Error()
