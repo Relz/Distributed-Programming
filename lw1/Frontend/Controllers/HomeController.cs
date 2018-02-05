@@ -8,17 +8,17 @@ using Frontend.Models;
 
 namespace Frontend.Controllers
 {
-    public class HomeController : Controller
-    {
-        public IActionResult Index(FormModel formModel)
-        {
-            // TODO: Send formModel.Data to Backend, recieve id and display it for user
-            return View(formModel);
-        }
+	public class HomeController : Controller
+	{
+		public IActionResult Index(FormModel formModel)
+		{
+			// TODO: Send formModel.Data to Backend, recieve id and display it for user
+			return View(formModel);
+		}
 
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-    }
+		public IActionResult Error()
+		{
+			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+		}
+	}
 }
