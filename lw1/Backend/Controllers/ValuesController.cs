@@ -16,17 +16,17 @@ namespace Backend.Controllers
 		[HttpGet("{id}")]
 		public string Get(string id)
 		{
-			string value = null;
-			_data.TryGetValue(id, out value);
-			return value;
+			string data = null;
+			_data.TryGetValue(id, out data);
+			return data;
 		}
 
 		// POST api/values
 		[HttpPost]
-		public string Post([FromBody]string value)
+		public string Post([FromBody]DataDto value)
 		{
 			string id = Guid.NewGuid().ToString();
-			_data[id] = value;
+			_data[id] = value.Data;
 			return id;
 		}
 	}
