@@ -23,6 +23,7 @@ namespace Backend.Controllers
 		{
 			string id = Guid.NewGuid().ToString();
 			RedisHelper.Instance.Set(id, value.Data);
+			RabbitMqHelper.Instance.SendMessage(id);
 			return id;
 		}
 	}
