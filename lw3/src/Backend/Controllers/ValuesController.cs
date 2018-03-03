@@ -10,15 +10,11 @@ namespace Backend.Controllers
 	[Route("api/[controller]")]
 	public class ValuesController : Controller
 	{
-		private static readonly ConcurrentDictionary<string, string> _data = new ConcurrentDictionary<string, string>();
-
 		// GET api/values/<id>
 		[HttpGet("{id}")]
 		public string Get(string id)
 		{
-			string data = null;
-			_data.TryGetValue(id, out data);
-			return data;
+			return RedisHelper.Instance.Get(id);
 		}
 
 		// POST api/values
@@ -26,7 +22,7 @@ namespace Backend.Controllers
 		public string Post([FromBody]DataDto value)
 		{
 			string id = Guid.NewGuid().ToString();
-			_data[id] = value.Data;
+			RedisHelper.Instance.Set(id, value.Data);
 			return id;
 		}
 	}
