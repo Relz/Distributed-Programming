@@ -3,9 +3,9 @@
 frontendPID=-1
 backendPID=-1
 textListenerPID=-1
-exec dotnet Frontend/Frontend.dll --configuration Release --launch-profile Production & frontendPID=$!
-exec dotnet Backend/Backend.dll --configuration Release --launch-profile Production & backendPID=$!
-exec dotnet TextListener/TextListener.dll --configuration Release --launch-profile Production & textListenerPID=$!
+xterm -hold -e 'dotnet Frontend/Frontend.dll --configuration Release --launch-profile Production' & frontendPID=$!
+xterm -hold -e 'dotnet Backend/Backend.dll --configuration Release --launch-profile Production' & backendPID=$!
+xterm -hold -e 'dotnet TextListener/TextListener.dll --configuration Release --launch-profile Production' & textListenerPID=$!
 
 truncate -s 0 "pid"
 echo $frontendPID >> "pid"
