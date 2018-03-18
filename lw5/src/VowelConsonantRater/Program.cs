@@ -5,12 +5,6 @@ using RabbitMQ.Client.Events;
 
 namespace VowelConsonantRater
 {
-	struct VowelConsonant
-	{
-		public int vowelCount;
-		public int consonantCount;
-	}
-
 	class Program
 	{
 		private static readonly string exchangeName = "vowel-cons-counter";
@@ -37,7 +31,9 @@ namespace VowelConsonantRater
 					int vowelCount;
 					int consonantCount;
 					if (Int32.TryParse(data[1], out vowelCount) && Int32.TryParse(data[2], out consonantCount)) {
-						RedisHelper.Instance.Set(data[0], CalculateRate(vowelCount, consonantCount));
+						string rate = CalculateRate(vowelCount, consonantCount);
+						Console.WriteLine($"'{data[0]} - {rate}' to redis");
+						RedisHelper.Instance.Set(data[0], rate);
 					}
 				};
 				channel.BasicConsume(
@@ -46,7 +42,8 @@ namespace VowelConsonantRater
 					consumer: consumer
 				);
 
-				Console.WriteLine(" Press [enter] to exit.");
+				Console.WriteLine("VowelConsonantRater has started");
+				Console.WriteLine("Press [enter] to exit.");
 				Console.ReadLine();
 			}
 		}

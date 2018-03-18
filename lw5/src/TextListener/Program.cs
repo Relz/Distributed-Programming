@@ -36,7 +36,8 @@ namespace TextListener
 					consumer: consumer
 				);
 
-				Console.WriteLine(" Press [enter] to exit.");
+				Console.WriteLine("TextListener has started");
+				Console.WriteLine("Press [enter] to exit.");
 				Console.ReadLine();
 			}
 		}

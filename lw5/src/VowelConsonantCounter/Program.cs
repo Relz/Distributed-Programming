@@ -37,6 +37,7 @@ namespace VowelConsonantCounter
 					string id = Encoding.UTF8.GetString(body);
 					string text = RedisHelper.Instance.Get(id);
 					VowelConsonant vowelConsonant = CalculateVowelConsonant(text);
+					Console.WriteLine($"{id}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount} to vowel-cons-counter queue");
 					RabbitMqHelper.Instance.SendMessage($"{id}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}");
 				};
 				channel.BasicConsume(
@@ -45,7 +46,8 @@ namespace VowelConsonantCounter
 					consumer: consumer
 				);
 
-				Console.WriteLine(" Press [enter] to exit.");
+				Console.WriteLine("VowelConsonantCounter has started");
+				Console.WriteLine("Press [enter] to exit.");
 				Console.ReadLine();
 			}
 		}

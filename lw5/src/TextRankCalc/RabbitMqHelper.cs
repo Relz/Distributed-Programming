@@ -14,6 +14,7 @@ namespace TextRankCalc
 
 		private RabbitMqHelper()
 		{
+			Console.WriteLine("RabbitMqHelper constructor");
 			ConnectionFactory factory = new ConnectionFactory() { HostName = "localhost" };
 			IConnection connection = factory.CreateConnection();
 			_channel = connection.CreateModel();

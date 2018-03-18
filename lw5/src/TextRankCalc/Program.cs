@@ -8,7 +8,6 @@ namespace TextRankCalc
 	class Program
 	{
 		private static readonly string exchangeName = "backend-api";
-		private static readonly string vowelLetters = "aeiouyAEIOUY";
 
 		static void Main()
 		{
@@ -29,6 +28,7 @@ namespace TextRankCalc
 				{
 					byte[] body = ea.Body;
 					string id = Encoding.UTF8.GetString(body);
+					Console.WriteLine($"{id} to text-rank-tasks queue");
 					RabbitMqHelper.Instance.SendMessage(id);
 				};
 				channel.BasicConsume(
@@ -37,7 +37,8 @@ namespace TextRankCalc
 					consumer: consumer
 				);
 
-				Console.WriteLine(" Press [enter] to exit.");
+				Console.WriteLine("TextRankCalc has started");
+				Console.WriteLine("Press [enter] to exit.");
 				Console.ReadLine();
 			}
 		}
