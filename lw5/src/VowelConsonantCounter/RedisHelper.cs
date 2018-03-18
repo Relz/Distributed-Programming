@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 
-namespace TextRankCalc
+namespace VowelConsonantCounter
 {
 	public sealed class RedisHelper
 	{

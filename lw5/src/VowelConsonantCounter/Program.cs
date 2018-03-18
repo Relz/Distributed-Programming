@@ -3,11 +3,17 @@ using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace TextRankCalc
+namespace VowelConsonantCounter
 {
+	struct VowelConsonant
+	{
+		public int vowelCount;
+		public int consonantCount;
+	}
+
 	class Program
 	{
-		private static readonly string exchangeName = "backend-api";
+		private static readonly string exchangeName = "text-rank-tasks";
 		private static readonly string vowelLetters = "aeiouyAEIOUY";
 
 		static void Main()
@@ -16,7 +22,7 @@ namespace TextRankCalc
 			using(var connection = factory.CreateConnection())
 			using(var channel = connection.CreateModel())
 			{
-				channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+				channel.ExchangeDeclare(exchange: exchangeName, type: "direct");
 				string queueName = channel.QueueDeclare().QueueName;
 				channel.QueueBind(
 					queue: queueName,
@@ -29,7 +35,9 @@ namespace TextRankCalc
 				{
 					byte[] body = ea.Body;
 					string id = Encoding.UTF8.GetString(body);
-					RabbitMqHelper.Instance.SendMessage(id);
+					string text = RedisHelper.Instance.Get(id);
+					VowelConsonant vowelConsonant = CalculateVowelConsonant(text);
+					RabbitMqHelper.Instance.SendMessage($"{id}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}");
 				};
 				channel.BasicConsume(
 					queue: queueName,
@@ -40,6 +48,23 @@ namespace TextRankCalc
 				Console.WriteLine(" Press [enter] to exit.");
 				Console.ReadLine();
 			}
+		}
+
+		private static VowelConsonant CalculateVowelConsonant(string text)
+		{
+			VowelConsonant result = new VowelConsonant();
+			foreach (char letter in text)
+			{
+				if (vowelLetters.IndexOf(letter) >= 0)
+				{
+					++result.vowelCount;
+				}
+				else
+				{
+					++result.consonantCount;
+				}
+			}
+			return result;
 		}
 	}
 }
