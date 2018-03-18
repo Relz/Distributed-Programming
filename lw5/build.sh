@@ -17,6 +17,10 @@ cd $scriptPath/src/TextListener
 dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/TextListener /property:PublishWithAspNetCoreTargetManifest=false
 cd $scriptPath/src/TextRankCalc
 dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/TextRankCalc /property:PublishWithAspNetCoreTargetManifest=false
+cd $scriptPath/src/VowelConsonantCounter
+dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/VowelConsonantCounter /property:PublishWithAspNetCoreTargetManifest=false
+cd $scriptPath/src/VowelConsonantRater
+dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/VowelConsonantRater /property:PublishWithAspNetCoreTargetManifest=false
 
 cp $scriptPath/src/run.sh $scriptPath/$1
 cp $scriptPath/src/stop.sh $scriptPath/$1
