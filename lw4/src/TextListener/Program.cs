@@ -3,12 +3,11 @@ using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace TextRankCalc
+namespace TextListener
 {
 	class Program
 	{
 		private static readonly string exchangeName = "backend-api";
-		private static readonly string vowelLetters = "aeiouyAEIOUY";
 
 		static void Main()
 		{
@@ -29,8 +28,7 @@ namespace TextRankCalc
 				{
 					byte[] body = ea.Body;
 					string message = Encoding.UTF8.GetString(body);
-					string text = RedisHelper.Instance.Get(message);
-					RedisHelper.Instance.Set(text, CalculateRank(text));
+					Console.WriteLine($"{message}: {RedisHelper.Instance.Get(message)}");
 				};
 				channel.BasicConsume(
 					queue: queueName,
@@ -41,24 +39,6 @@ namespace TextRankCalc
 				Console.WriteLine(" Press [enter] to exit.");
 				Console.ReadLine();
 			}
-		}
-
-		private static string CalculateRank(string text)
-		{
-			uint vowelLetterCount = 0;
-			uint consonantLetterCount = 0;
-			foreach (char letter in text)
-			{
-				if (vowelLetters.IndexOf(letter) >= 0)
-				{
-					++vowelLetterCount;
-				}
-				else
-				{
-					++consonantLetterCount;
-				}
-			}
-			return consonantLetterCount == 0 ? "Infinity" : ((double)vowelLetterCount / consonantLetterCount).ToString();
 		}
 	}
 }

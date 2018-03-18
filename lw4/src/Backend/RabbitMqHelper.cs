@@ -9,13 +9,15 @@ namespace Backend
 {
 	public sealed class RabbitMqHelper
 	{
+		private static readonly string exchangeName = "backend-api";
 		private IModel _channel;
-		
+
 		private RabbitMqHelper()
 		{
 			ConnectionFactory factory = new ConnectionFactory() { HostName = "localhost" };
 			IConnection connection = factory.CreateConnection();
 			_channel = connection.CreateModel();
+			_channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
 		}
 
 		public static RabbitMqHelper Instance { get; } = new RabbitMqHelper();
@@ -23,8 +25,8 @@ namespace Backend
 		public void SendMessage(string message)
 		{
 			_channel.BasicPublish(
-				exchange: "",
-				routingKey: "booking-api",
+				exchange: exchangeName,
+				routingKey: "",
 				basicProperties: null,
 				body: Encoding.UTF8.GetBytes(message)
 			);
