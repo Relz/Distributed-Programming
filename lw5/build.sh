@@ -5,22 +5,43 @@ if [ $# != 1 ]; then
 	exit 1
 fi
 
+buildDirectory=$1
 scriptPath="$( cd "$(dirname "$0")" ; pwd -P)"
 
-mkdir -p $scriptPath/$1/config
+build()
+{
+	cd $scriptPath/src/$1
+	dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$buildDirectory/$1 /property:PublishWithAspNetCoreTargetManifest=false
+}
 
-cd $scriptPath/src/Frontend
-dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/Frontend /property:PublishWithAspNetCoreTargetManifest=false
-cd $scriptPath/src/Backend
-dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/Backend /property:PublishWithAspNetCoreTargetManifest=false
-cd $scriptPath/src/TextListener
-dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/TextListener /property:PublishWithAspNetCoreTargetManifest=false
-cd $scriptPath/src/TextRankCalc
-dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/TextRankCalc /property:PublishWithAspNetCoreTargetManifest=false
-cd $scriptPath/src/VowelConsonantCounter
-dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/VowelConsonantCounter /property:PublishWithAspNetCoreTargetManifest=false
-cd $scriptPath/src/VowelConsonantRater
-dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$1/VowelConsonantRater /property:PublishWithAspNetCoreTargetManifest=false
+copy()
+{
+	if [ -d $scriptPath/src/$1 ]; then
+		cp $scriptPath/src/$1 $scriptPath/$buildDirectory/$1 -r
+	else
+		cp $scriptPath/src/$1 $scriptPath/$buildDirectory/$1
+	fi
+}
 
-cp $scriptPath/src/run.sh $scriptPath/$1
-cp $scriptPath/src/stop.sh $scriptPath/$1
+programs=(
+	"Frontend"
+	"Backend"
+	"TextListener"
+	"TextRankCalc"
+	"VowelConsonantCounter"
+	"VowelConsonantRater" )
+
+for program in ${programs[@]}
+do
+	build $program
+done
+
+elementsToCopy=(
+	"run.sh"
+	"stop.sh"
+	"config" )
+
+for element in ${elementsToCopy[@]}
+do
+	copy $element
+done

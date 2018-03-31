@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using RedisLibrary;
 
 namespace Backend.Controllers
 {
@@ -14,16 +15,16 @@ namespace Backend.Controllers
 		[HttpGet("{id}")]
 		public string Get(string id)
 		{
-			if (!RedisHelper.Instance.Exists(id))
+			if (!Redis.Instance.Database.KeyExists(id))
 			{
 				return "Invalid id";
 			}
-			string text = RedisHelper.Instance.Get(id);
-			if (!RedisHelper.Instance.Exists(text))
+			string text = Redis.Instance.Database.StringGet(id);
+			if (!Redis.Instance.Database.KeyExists(text))
 			{
 				return "Hasn't calculated yet";
 			}
-			return RedisHelper.Instance.Get(text);
+			return Redis.Instance.Database.StringGet(text);
 		}
 	}
 }

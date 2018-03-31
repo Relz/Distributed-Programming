@@ -47,7 +47,7 @@ namespace Frontend.Controllers
 					result = await GetTextDetails(textDetailsModel.Id);
 					++retries;
 				}
-				textDetailsModel.Rank = (result == null) ? "Something went wrong..." : result;
+				textDetailsModel.Rank = (result == null) ? "404 not found" : result;
 			}
 			return View(textDetailsModel);
 		}

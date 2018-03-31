@@ -1,22 +1,44 @@
 #! /bin/bash
 
-frontendPID=-1
-backendPID=-1
-textListenerPID=-1
-textRankCalcPID=-1
-vowelConsonantCounterPID=-1
-vowelConsonantRaterPID=-1
-xterm -hold -e 'dotnet Frontend/Frontend.dll --configuration Release --launch-profile Production' & frontendPID=$!
-xterm -hold -e 'dotnet Backend/Backend.dll --configuration Release --launch-profile Production' & backendPID=$!
-xterm -hold -e 'dotnet TextListener/TextListener.dll --configuration Release --launch-profile Production' & textListenerPID=$!
-xterm -hold -e 'dotnet TextRankCalc/TextRankCalc.dll --configuration Release --launch-profile Production' & textRankCalcPID=$!
-xterm -hold -e 'dotnet VowelConsonantCounter/VowelConsonantCounter.dll --configuration Release --launch-profile Production' & vowelConsonantCounterPID=$!
-xterm -hold -e 'dotnet VowelConsonantRater/VowelConsonantRater.dll --configuration Release --launch-profile Production' & vowelConsonantRaterPID=$!
+processNames=()
+processCounts=()
+
+readProcesses()
+{
+	local flag=true
+	for value in `jq '.process[] | (.name, .count)' config/config.json`
+	do
+		if [ $flag = true ]; then
+			flag=false
+			processNames+=($value)
+		else
+			flag=true
+			processCounts+=($value)
+		fi
+	done
+}
+
+runProcess()
+{
+	for (( i=0; i < $2; ++i ))
+	do
+		processID=-1
+		xterm -hold -e "dotnet $1/$1.dll --configuration Release --launch-profile Production" & processID=$!
+		echo $processID >> "pid"
+	done
+}
+
+runProcesses()
+{
+	local index=0
+	for processName in ${processNames[@]}
+	do
+		runProcess ${processNames[$index]} ${processCounts[$index]}
+		let index=$index+1
+	done
+}
 
 truncate -s 0 "pid"
-echo $frontendPID >> "pid"
-echo $backendPID >> "pid"
-echo $textListenerPID >> "pid"
-echo $textRankCalcPID >> "pid"
-echo $vowelConsonantCounterPID >> "pid"
-echo $vowelConsonantRaterPID >> "pid"
+
+readProcesses
+runProcesses

@@ -15,7 +15,7 @@ namespace TextListener
 			using(var connection = factory.CreateConnection())
 			using(var channel = connection.CreateModel())
 			{
-				channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+				channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Fanout);
 				string queueName = channel.QueueDeclare().QueueName;
 				channel.QueueBind(
 					queue: queueName,

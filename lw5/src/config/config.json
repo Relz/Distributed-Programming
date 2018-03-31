@@ -1,0 +1,29 @@
+{
+	"process":
+	[
+		{
+			"name": "Frontend",
+			"count": 1
+		},
+		{
+			"name": "Backend",
+			"count": 1
+		},
+		{
+			"name": "TextListener",
+			"count": 1
+		},
+		{
+			"name": "TextRankCalc",
+			"count": 1
+		},
+		{
+			"name": "VowelConsonantCounter",
+			"count": 3
+		},
+		{
+			"name": "VowelConsonantRater",
+			"count": 2
+		}
+	]
+}

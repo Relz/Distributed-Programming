@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Text;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+using RabbitMqLibrary;
+using RedisLibrary;
 
 namespace VowelConsonantCounter
 {
@@ -13,43 +12,31 @@ namespace VowelConsonantCounter
 
 	class Program
 	{
-		private static readonly string exchangeName = "text-rank-tasks";
-		private static readonly string vowelLetters = "aeiouyAEIOUY";
+		private const string queueName = "vowel-cons-counter";
+		private const string exchangeName = "text-rank-tasks";
+		private const string vowelLetters = "aeiouyAEIOUY";
 
 		static void Main()
 		{
-			var factory = new ConnectionFactory() { HostName = "localhost" };
-			using(var connection = factory.CreateConnection())
-			using(var channel = connection.CreateModel())
+			var rabbitMq = new RabbitMq();
+			rabbitMq.QueueDeclare(queueName);
+			rabbitMq.ExchangeDeclare(exchangeName, ExchangeType.Direct);
+			rabbitMq.BindQueueToExchange(exchangeName);
+			rabbitMq.ConsumeQueue(textId =>
 			{
-				channel.ExchangeDeclare(exchange: exchangeName, type: "direct");
-				string queueName = channel.QueueDeclare().QueueName;
-				channel.QueueBind(
-					queue: queueName,
-					exchange: exchangeName,
-					routingKey: ""
-				);
+				string text = Redis.Instance.Database.StringGet(textId);
+				VowelConsonant vowelConsonant = CalculateVowelConsonant(text);
+				string countId = Guid.NewGuid().ToString();
+				Console.WriteLine($"'{countId}: {textId}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}' to redis");
+				Redis.Instance.Database.StringSet(countId, $"{textId}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}");
+				Console.WriteLine($"{countId} to vowel-cons-counter queue");
+				rabbitMq.PublishToExchange("vowel-cons-counter", countId);
+				Console.WriteLine("----------");
+			});
 
-				EventingBasicConsumer consumer = new EventingBasicConsumer(channel);
-				consumer.Received += (model, ea) =>
-				{
-					byte[] body = ea.Body;
-					string id = Encoding.UTF8.GetString(body);
-					string text = RedisHelper.Instance.Get(id);
-					VowelConsonant vowelConsonant = CalculateVowelConsonant(text);
-					Console.WriteLine($"{id}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount} to vowel-cons-counter queue");
-					RabbitMqHelper.Instance.SendMessage($"{id}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}");
-				};
-				channel.BasicConsume(
-					queue: queueName,
-					autoAck: true,
-					consumer: consumer
-				);
-
-				Console.WriteLine("VowelConsonantCounter has started");
-				Console.WriteLine("Press [enter] to exit.");
-				Console.ReadLine();
-			}
+			Console.WriteLine("VowelConsonantCounter has started");
+			Console.WriteLine("Press [enter] to exit.");
+			Console.ReadLine();
 		}
 
 		private static VowelConsonant CalculateVowelConsonant(string text)
