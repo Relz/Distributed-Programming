@@ -18,8 +18,11 @@ namespace VowelConsonantRater
 			rabbitMq.ConsumeQueue(textId =>
 			{
 				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
-				string countDataString = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Count}{textId}");
+				string countKey = $"{ConstantLibrary.Redis.Prefix.Count}{textId}";
+				string countDataString = Redis.Instance.Database.StringGet(countKey);
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {countDataString}' from redis database({Redis.Instance.Database.Database})");
+				Redis.Instance.Database.KeyDelete(countKey);
+				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {countDataString}' deleted from redis database({Redis.Instance.Database.Database})");
 				string[] countData = countDataString.Split('|');
 				int vowelCount;
 				int consonantCount;
