@@ -7,24 +7,33 @@ if %argCount% NEQ 1 (
 	exit 1
 )
 
+set buildDirectory=%1
 set scriptPath="%cd%"
 
-mkdir %scriptPath%\%1\config
+mkdir %scriptPath%\%buildDirectory%
 
-cd %scriptPath%\src\Frontend
-dotnet publish --configuration Release --framework netcoreapp2.0 -o %scriptPath%\%1\Frontend /property:PublishWithAspNetCoreTargetManifest=false
-cd %scriptPath%\src\Backend
-dotnet publish --configuration Release --framework netcoreapp2.0 -o %scriptPath%\%1\Backend /property:PublishWithAspNetCoreTargetManifest=false
-cd %scriptPath%\src\TextListener
-dotnet publish --configuration Release --framework netcoreapp2.0 -o %scriptPath%\%1\TextListener /property:PublishWithAspNetCoreTargetManifest=false
-cd %scriptPath%\src\TextRankCalc
-dotnet publish --configuration Release --framework netcoreapp2.0 -o %scriptPath%\%1\TextRankCalc /property:PublishWithAspNetCoreTargetManifest=false
-cd %scriptPath%\src\VowelConsonantCounter
-dotnet publish --configuration Release --framework netcoreapp2.0 -o %scriptPath%\%1\VowelConsonantCounter /property:PublishWithAspNetCoreTargetManifest=false
-cd %scriptPath%\src\VowelConsonantRater
-dotnet publish --configuration Release --framework netcoreapp2.0 -o %scriptPath%\%1\VowelConsonantRater /property:PublishWithAspNetCoreTargetManifest=false
+call :build "Frontend"
+call :build "Backend"
+call :build "TextListener"
+call :build "TextRankCalc"
+call :build "VowelConsonantCounter"
+call :build "VowelConsonantRater"
 
 cd %scriptPath%
 
-copy %scriptPath%\src\run.cmd %scriptPath%\%1
-copy %scriptPath%\src\stop.cmd %scriptPath%\%1
+call :copy "run.sh" "F"
+call :copy "run.cmd" "F"
+call :copy "stop.sh" "F"
+call :copy "stop.cmd" "F"
+call :copy "config" "D"
+
+exit /B %ERRORLEVEL%
+
+:build
+	cd %scriptPath%\src\%~1
+	dotnet publish --configuration Release --framework netcoreapp2.0 -o %scriptPath%\%buildDirectory%\%~1 /property:PublishWithAspNetCoreTargetManifest=false
+exit /B 0
+
+:copy
+	echo %~2 | xcopy /s %scriptPath%\src\%~1 %scriptPath%\%buildDirectory%\%~1 > NUL
+exit /B 0

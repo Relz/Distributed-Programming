@@ -31,15 +31,17 @@ programs=(
 	"VowelConsonantCounter"
 	"VowelConsonantRater" )
 
+elementsToCopy=(
+	"run.sh"
+	"run.cmd"
+	"stop.sh"
+	"stop.cmd"
+	"config" )
+
 for program in ${programs[@]}
 do
 	build $program
 done
-
-elementsToCopy=(
-	"run.sh"
-	"stop.sh"
-	"config" )
 
 for element in ${elementsToCopy[@]}
 do
