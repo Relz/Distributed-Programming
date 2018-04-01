@@ -3,11 +3,33 @@ set argCount=0
 for %%x in (%*) do (set /A argCount+=1)
 
 if %argCount% NEQ 1 (
-	echo "./build.cmd <version>"
-	exit 1
+	echo "build.cmd <version>"
+	exit /B 1
 )
 
 set buildDirectory=%1
+
+setlocal enableDelayedExpansion
+for /f "tokens=1,2,3 delims=." %%a in ("%buildDirectory%") do (
+	set /a result=1
+	set first=%%a
+	set second=%%b
+	set third=%%c
+	if not defined first (
+		set result=0
+	)
+	if not defined second (
+		set result=0
+	)
+	if not defined third (
+		set result=0
+	)
+	if !result! EQU 0 (
+		echo "<version> not seems to be a semver version"
+		exit /B 1
+	)
+)
+
 set scriptPath="%cd%"
 
 mkdir %scriptPath%\%buildDirectory%
