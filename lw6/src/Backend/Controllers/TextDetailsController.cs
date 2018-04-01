@@ -15,16 +15,18 @@ namespace Backend.Controllers
 		[HttpGet("{id}")]
 		public string Get(string id)
 		{
-			if (!Redis.Instance.Database.KeyExists(id))
+			Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(id));
+			if (!Redis.Instance.Database.KeyExists($"{ConstantLibrary.Redis.Prefix.Text}{id}"))
 			{
 				return "Invalid id";
 			}
-			string text = Redis.Instance.Database.StringGet(id);
-			if (!Redis.Instance.Database.KeyExists(text))
+			if (!Redis.Instance.Database.KeyExists($"{ConstantLibrary.Redis.Prefix.Rank}{id}"))
 			{
 				return "Hasn't calculated yet";
 			}
-			return Redis.Instance.Database.StringGet(text);
+			string result = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Rank}{id}");
+			Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Rank}{id}: {result}' from redis database({Redis.Instance.Database.Database})");
+			return result;
 		}
 	}
 }

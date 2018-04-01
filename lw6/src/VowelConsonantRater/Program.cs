@@ -15,17 +15,19 @@ namespace VowelConsonantRater
 			rabbitMq.QueueDeclare(queueName);
 			rabbitMq.ExchangeDeclare(exchangeName, ExchangeType.Direct);
 			rabbitMq.BindQueueToExchange(exchangeName);
-			rabbitMq.ConsumeQueue(countId =>
+			rabbitMq.ConsumeQueue(textId =>
 			{
-				string[] countData = Redis.Instance.Database.StringGet(countId).ToString().Split('|');
-				string text = Redis.Instance.Database.StringGet(countData[0]);
+				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
+				string countDataString = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Count}{textId}");
+				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {countDataString}' from redis database({Redis.Instance.Database.Database})");
+				string[] countData = countDataString.Split('|');
 				int vowelCount;
 				int consonantCount;
-				if (Int32.TryParse(countData[1], out vowelCount) && Int32.TryParse(countData[2], out consonantCount))
+				if (Int32.TryParse(countData[0], out vowelCount) && Int32.TryParse(countData[1], out consonantCount))
 				{
-					string rate = CalculateRate(vowelCount, consonantCount);
-					Console.WriteLine($"'{text}: {rate}' to redis");
-					Redis.Instance.Database.StringSet(text, rate);
+					string rank = CalculateRank(vowelCount, consonantCount);
+					Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Rank}{textId}", rank);
+					Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Rank}{textId}: {rank}' to redis database({Redis.Instance.Database.Database})");
 				}
 			});
 
@@ -34,7 +36,7 @@ namespace VowelConsonantRater
 			Console.ReadLine();
 		}
 
-		private static string CalculateRate(int vowelCount, int consonantCount)
+		private static string CalculateRank(int vowelCount, int consonantCount)
 		{
 			return consonantCount == 0 ? "Infinity" : ((double)vowelCount / consonantCount).ToString();
 		}

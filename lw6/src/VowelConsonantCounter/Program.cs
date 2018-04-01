@@ -24,13 +24,14 @@ namespace VowelConsonantCounter
 			rabbitMq.BindQueueToExchange(exchangeName);
 			rabbitMq.ConsumeQueue(textId =>
 			{
-				string text = Redis.Instance.Database.StringGet(textId);
+				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
+				string text = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Text}{textId}");
+				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Text}{textId}: {text}' from redis database({Redis.Instance.Database.Database})");
 				VowelConsonant vowelConsonant = CalculateVowelConsonant(text);
-				string countId = Guid.NewGuid().ToString();
-				Console.WriteLine($"'{countId}: {textId}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}' to redis");
-				Redis.Instance.Database.StringSet(countId, $"{textId}|{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}");
-				Console.WriteLine($"{countId} to vowel-cons-counter queue");
-				rabbitMq.PublishToExchange("vowel-cons-counter", countId);
+				Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Count}{textId}", $"{vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}");
+				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {vowelConsonant.vowelCount}|{vowelConsonant.consonantCount}' to redis database({Redis.Instance.Database.Database})");
+				Console.WriteLine($"{textId} to vowel-cons-counter queue");
+				rabbitMq.PublishToExchange("vowel-cons-counter", textId);
 				Console.WriteLine("----------");
 			});
 

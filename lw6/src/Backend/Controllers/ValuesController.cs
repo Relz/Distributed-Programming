@@ -18,19 +18,24 @@ namespace Backend.Controllers
 		[HttpGet("{id}")]
 		public string Get(string id)
 		{
-			return Redis.Instance.Database.StringGet(id);
+			Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(id));
+			string result = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Text}{id}");
+			Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Text}{id}: {result}' from redis database({Redis.Instance.Database.Database})");
+			return result;
 		}
 
 		// POST api/values
 		[HttpPost]
 		public string Post([FromBody]DataDto value)
 		{
-			string id = Guid.NewGuid().ToString();
-			Redis.Instance.Database.StringSet(id, value.Data);
+			string textId = Guid.NewGuid().ToString();
+			Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
+			Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Text}{textId}", value.Data);
+			Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Text}{textId}: {value.Data}' to redis database({Redis.Instance.Database.Database})");
 			const string exchangeName = "backend-api";
 			_rabbitMq.ExchangeDeclare(exchangeName, ExchangeType.Fanout);
-			_rabbitMq.PublishToExchange(exchangeName, id);
-			return id;
+			_rabbitMq.PublishToExchange(exchangeName, textId);
+			return textId;
 		}
 	}
 }
