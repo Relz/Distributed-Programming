@@ -5,6 +5,13 @@ if [ $# != 1 ]; then
 	exit 1
 fi
 
+while IFS='.' read -ra semverParts; do
+	if [ ${#semverParts[@]} != 3 ]; then
+		echo "<version> not seems to be a semver version"
+		exit 2
+	fi
+done <<< "$1"
+
 buildDirectory=$1
 scriptPath="$( cd "$(dirname "$0")" ; pwd -P)"
 
