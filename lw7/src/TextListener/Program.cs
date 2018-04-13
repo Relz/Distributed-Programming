@@ -6,14 +6,14 @@ namespace TextListener
 {
 	class Program
 	{
-		private const string exchangeName = "backend-api";
+		private const string _exchangeName = "backend-api";
 
 		static void Main()
 		{
 			var rabbitMq = new RabbitMq();
 			rabbitMq.QueueDeclare();
-			rabbitMq.ExchangeDeclare(exchangeName, ExchangeType.Fanout);
-			rabbitMq.BindQueueToExchange(exchangeName);
+			rabbitMq.ExchangeDeclare(_exchangeName, ExchangeType.Fanout);
+			rabbitMq.BindQueueToExchange(_exchangeName);
 			rabbitMq.ConsumeQueue(textId =>
 			{
 				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));

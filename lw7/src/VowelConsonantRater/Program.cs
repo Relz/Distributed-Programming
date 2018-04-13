@@ -6,15 +6,16 @@ namespace VowelConsonantRater
 {
 	class Program
 	{
-		private const string queueName = "vowel-cons-rater";
-		private const string exchangeName = "vowel-cons-counter";
+		private const string _queueName = "vowel-cons-rater";
+		private const string _listeningExchangeName = "vowel-cons-counter";
+		private const string _publishExchangeName = "text-rank-calc";
 
 		static void Main()
 		{
 			var rabbitMq = new RabbitMq();
-			rabbitMq.QueueDeclare(queueName);
-			rabbitMq.ExchangeDeclare(exchangeName, ExchangeType.Direct);
-			rabbitMq.BindQueueToExchange(exchangeName);
+			rabbitMq.QueueDeclare(_queueName);
+			rabbitMq.ExchangeDeclare(_listeningExchangeName, ExchangeType.Direct);
+			rabbitMq.BindQueueToExchange(_listeningExchangeName);
 			rabbitMq.ConsumeQueue(textId =>
 			{
 				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
@@ -22,15 +23,19 @@ namespace VowelConsonantRater
 				string countDataString = Redis.Instance.Database.StringGet(countKey);
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {countDataString}' from redis database({Redis.Instance.Database.Database})");
 				Redis.Instance.Database.KeyDelete(countKey);
-				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {countDataString}' deleted rfrom redis database({Redis.Instance.Database.Database})");
+				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {countDataString}' deleted from redis database({Redis.Instance.Database.Database})");
 				string[] countData = countDataString.Split('|');
 				int vowelCount;
 				int consonantCount;
 				if (Int32.TryParse(countData[0], out vowelCount) && Int32.TryParse(countData[1], out consonantCount))
 				{
 					string rank = CalculateRank(vowelCount, consonantCount);
-					Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Rank}{textId}", rank);
+
 					Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Rank}{textId}: {rank}' to redis database({Redis.Instance.Database.Database})");
+					Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Rank}{textId}", rank);
+
+					Console.WriteLine($"{textId} to {_publishExchangeName} exchange");
+					rabbitMq.PublishToExchange(_publishExchangeName, textId);
 				}
 			});
 

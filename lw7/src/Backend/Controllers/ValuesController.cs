@@ -12,7 +12,14 @@ namespace Backend.Controllers
 	[Route("api/[controller]")]
 	public class ValuesController : Controller
 	{
+		private const string _publishExchangeName = "backend-api";
+
 		private RabbitMq _rabbitMq = new RabbitMq();
+
+		public ValuesController()
+		{
+			_rabbitMq.ExchangeDeclare(_publishExchangeName, ExchangeType.Fanout);
+		}
 
 		// GET api/values/<id>
 		[HttpGet("{id}")]
@@ -21,6 +28,7 @@ namespace Backend.Controllers
 			Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(id));
 			string result = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Text}{id}");
 			Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Text}{id}: {result}' from redis database({Redis.Instance.Database.Database})");
+
 			return result;
 		}
 
@@ -30,11 +38,13 @@ namespace Backend.Controllers
 		{
 			string textId = Guid.NewGuid().ToString();
 			Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
-			Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Text}{textId}", value.Data);
+
 			Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Text}{textId}: {value.Data}' to redis database({Redis.Instance.Database.Database})");
-			const string exchangeName = "backend-api";
-			_rabbitMq.ExchangeDeclare(exchangeName, ExchangeType.Fanout);
-			_rabbitMq.PublishToExchange(exchangeName, textId);
+			Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Text}{textId}", value.Data);
+
+			Console.WriteLine($"{textId} to {_publishExchangeName} exchange");
+			_rabbitMq.PublishToExchange(_publishExchangeName, textId);
+
 			return textId;
 		}
 	}
