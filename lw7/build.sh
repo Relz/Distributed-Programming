@@ -36,7 +36,8 @@ programs=(
 	"TextListener"
 	"TextRankCalc"
 	"VowelConsonantCounter"
-	"VowelConsonantRater" )
+	"VowelConsonantRater"
+	"TextStatistics" )
 
 elementsToCopy=(
 	"run.sh"

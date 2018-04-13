@@ -30,7 +30,7 @@ namespace RedisLibrary
 				}
 			}
 
-			return digitCount % ConstantLibrary.Redis.DatabaseCount;
+			return digitCount % ConstantLibrary.Redis.RankCalcDatabaseCount;
 		}
 	}
 }

@@ -40,6 +40,7 @@ call :build "TextListener"
 call :build "TextRankCalc"
 call :build "VowelConsonantCounter"
 call :build "VowelConsonantRater"
+call :build "TextStatistics"
 
 cd %scriptPath%
 

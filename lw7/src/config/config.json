@@ -24,6 +24,10 @@
 		{
 			"name": "VowelConsonantRater",
 			"count": 2
+		},
+		{
+			"name": "TextStatistics",
+			"count": 1
 		}
 	]
 }
