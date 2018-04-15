@@ -33,6 +33,7 @@ namespace Frontend.Controllers
 				}
 				TextDetailsModel textDetailsModel = new TextDetailsModel();
 				textDetailsModel.Id = id;
+
 				return RedirectToAction("TextDetails", "Home", textDetailsModel);
 			}
 			return View(formModel);

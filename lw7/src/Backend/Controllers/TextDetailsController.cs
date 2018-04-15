@@ -26,6 +26,7 @@ namespace Backend.Controllers
 			}
 			string result = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Rank}{id}");
 			Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Rank}{id}: {result}' from redis database({Redis.Instance.Database.Database})");
+
 			return result;
 		}
 	}
