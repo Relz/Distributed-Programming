@@ -14,7 +14,7 @@ namespace Backend.Controllers
 	{
 		private const string _publishExchangeName = "backend-api";
 
-		private RabbitMq _rabbitMq = new RabbitMq();
+		private static RabbitMq _rabbitMq = new RabbitMq();
 
 		public ValuesController()
 		{

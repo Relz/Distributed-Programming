@@ -4,10 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Frontend.Models;
 using System.Net.Http;
 using System.Text;
 using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using Frontend.Models;
+using ModelLibrary;
 
 namespace Frontend.Controllers
 {
@@ -70,6 +72,24 @@ namespace Frontend.Controllers
 			}
 			System.Threading.Thread.Sleep(2000);
 			return null;
+		}
+
+		public async Task<IActionResult> Statistics(StatisticsModel statisticsModel)
+		{
+			string url = $"http://127.0.0.1:5050/api/statistics";
+			using (HttpClient httpClient = new HttpClient())
+			{
+				httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+				using (HttpResponseMessage response = await httpClient.GetAsync(url))
+				using (HttpContent content = response.Content)
+				{
+					Statistics statistics = JsonConvert.DeserializeObject<Statistics>(content.ReadAsStringAsync().Result);
+					statisticsModel.TotalTextCount = statistics.TotalTextCount;
+					statisticsModel.HighRankCount = statistics.HighRankCount;
+					statisticsModel.AverageRank = statistics.TotalRank / statistics.TotalTextCount;
+				}
+			}
+			return View(statisticsModel);
 		}
 
 		public IActionResult Error()

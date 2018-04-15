@@ -1,4 +1,5 @@
 ﻿using System;
+using ModelLibrary;
 using RabbitMqLibrary;
 using RedisLibrary;
 
@@ -8,9 +9,7 @@ namespace TextStatistics
 	{
 		private const string _listeningExchangeName = "text-rank-calc";
 
-		private static int _totalTextCount = 0;
-		private static int _highRankCount = 0;
-		private static double _totalRank = 0;
+		private static Statistics _statistics = new Statistics();
 
 		static void Main()
 		{
@@ -24,19 +23,22 @@ namespace TextStatistics
 				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
 				double rank = Double.Parse(Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Rank}{textId}"));
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Rank}{textId}: {rank}' from redis database({Redis.Instance.Database.Database})");
-				Console.WriteLine($"{textId}: {rank}");
 
-				++_totalTextCount;
+				++_statistics.TotalTextCount;
 				if (rank > 0.5)
 				{
-					++_highRankCount;
+					++_statistics.HighRankCount;
 				}
-				_totalRank += rank;
+				_statistics.TotalRank += rank;
 
-				Redis.Instance.SetDatabase(ConstantLibrary.Redis.StatisticsDatabaseId);
-				Redis.Instance.Database.StringSet(ConstantLibrary.Redis.Prefix.Statistics.TotalTextCount, _totalTextCount);
-				Redis.Instance.Database.StringSet(ConstantLibrary.Redis.Prefix.Statistics.HighRankCount, _highRankCount);
-				Redis.Instance.Database.StringSet(ConstantLibrary.Redis.Prefix.Statistics.TotalRank, _totalRank);
+				Redis.Instance.SetDatabase(ConstantLibrary.Redis.Statistics.DatabaseId);
+				IncreaseStatisticsVersion();
+				Redis.Instance.Database.StringSet(ConstantLibrary.Redis.Statistics.TotalTextCount, _statistics.TotalTextCount);
+				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.TotalTextCount}: {_statistics.TotalTextCount}' to redis database({Redis.Instance.Database.Database})");
+				Redis.Instance.Database.StringSet(ConstantLibrary.Redis.Statistics.HighRankCount, _statistics.HighRankCount);
+				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.HighRankCount}: {_statistics.HighRankCount}' to redis database({Redis.Instance.Database.Database})");
+				Redis.Instance.Database.StringSet(ConstantLibrary.Redis.Statistics.TotalRank, _statistics.TotalRank);
+				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.TotalRank}: {_statistics.TotalRank}' to redis database({Redis.Instance.Database.Database})");
 			});
 
 			Console.WriteLine("TextStatistics has started");
@@ -46,19 +48,31 @@ namespace TextStatistics
 
 		private static void LoadStatistics()
 		{
-			Redis.Instance.SetDatabase(ConstantLibrary.Redis.StatisticsDatabaseId);
-			if (Redis.Instance.Database.KeyExists(ConstantLibrary.Redis.Prefix.Statistics.TotalTextCount))
+			Redis.Instance.SetDatabase(ConstantLibrary.Redis.Statistics.DatabaseId);
+			if (Redis.Instance.Database.KeyExists(ConstantLibrary.Redis.Statistics.TotalTextCount))
 			{
-				_totalTextCount = Int32.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Prefix.Statistics.TotalTextCount));
+				_statistics.TotalTextCount = Int32.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Statistics.TotalTextCount));
+				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.TotalTextCount}: {_statistics.TotalTextCount}' from redis database({Redis.Instance.Database.Database})");
 			}
-			if (Redis.Instance.Database.KeyExists(ConstantLibrary.Redis.Prefix.Statistics.HighRankCount))
+			if (Redis.Instance.Database.KeyExists(ConstantLibrary.Redis.Statistics.HighRankCount))
 			{
-				_highRankCount = Int32.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Prefix.Statistics.HighRankCount));
+				_statistics.HighRankCount = Int32.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Statistics.HighRankCount));
+				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.HighRankCount}: {_statistics.HighRankCount}' from redis database({Redis.Instance.Database.Database})");
 			}
-			if (Redis.Instance.Database.KeyExists(ConstantLibrary.Redis.Prefix.Statistics.TotalRank))
+			if (Redis.Instance.Database.KeyExists(ConstantLibrary.Redis.Statistics.TotalRank))
 			{
-				_totalRank = Double.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Prefix.Statistics.TotalRank));
+				_statistics.TotalRank = Double.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Statistics.TotalRank));
+				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.TotalRank}: {_statistics.TotalRank}' from redis database({Redis.Instance.Database.Database})");
 			}
+		}
+
+		private static void IncreaseStatisticsVersion()
+		{
+			int currentStatisticsVersion = Redis.Instance.Database.KeyExists(ConstantLibrary.Redis.Statistics.Version)
+				? Int32.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Statistics.Version))
+				: 0;
+			Redis.Instance.Database.StringSet(ConstantLibrary.Redis.Statistics.Version, currentStatisticsVersion + 1);
+			Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.Version}: {currentStatisticsVersion + 1}' to redis database({Redis.Instance.Database.Database})");
 		}
 	}
 }

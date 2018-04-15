@@ -1,0 +1,11 @@
+@model Frontend.Models.StatisticsModel;
+@{
+	ViewData["Title"] = "Statistics Page";
+}
+
+<legend>Statistics</legend>
+<div class="form-group">
+	@Html.TextBoxFor(model => model.TotalTextCount)
+	@Html.TextBoxFor(model => model.HighRankCount)
+	@Html.TextBoxFor(model => model.AverageRank)
+</div>
