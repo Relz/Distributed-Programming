@@ -87,7 +87,7 @@ namespace Frontend.Controllers
 					Statistics statistics = JsonConvert.DeserializeObject<Statistics>(content.ReadAsStringAsync().Result);
 					statisticsModel.TotalTextCount = statistics.TotalTextCount;
 					statisticsModel.HighRankCount = statistics.HighRankCount;
-					statisticsModel.AverageRank = statistics.TotalRank / statistics.TotalTextCount;
+					statisticsModel.AverageRank = statistics.TotalTextCount == 0 ? 0 : statistics.TotalRank / statistics.TotalTextCount;
 				}
 			}
 			return View(statisticsModel);
