@@ -20,6 +20,8 @@ namespace TextListener
 				string text = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Text}{textId}");
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Text}{textId}: {text}' from redis database({Redis.Instance.Database.Database})");
 				Console.WriteLine($"{textId}: {text}");
+
+				Console.WriteLine("----------");
 			});
 
 			Console.WriteLine("TextListener has started");

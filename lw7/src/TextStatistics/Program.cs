@@ -39,6 +39,8 @@ namespace TextStatistics
 				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.HighRankCount}: {_statistics.HighRankCount}' to redis database({Redis.Instance.Database.Database})");
 				Redis.Instance.Database.StringSet(ConstantLibrary.Redis.Statistics.TotalRank, _statistics.TotalRank);
 				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.TotalRank}: {_statistics.TotalRank}' to redis database({Redis.Instance.Database.Database})");
+
+				Console.WriteLine("----------");
 			});
 
 			Console.WriteLine("TextStatistics has started");

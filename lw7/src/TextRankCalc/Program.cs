@@ -18,6 +18,8 @@ namespace TextRankCalc
 			{
 				Console.WriteLine($"{id} to {_publishExchangeName} exchange");
 				rabbitMq.PublishToExchange(_publishExchangeName, id);
+
+				Console.WriteLine("----------");
 			});
 
 			Console.WriteLine("TextRankCalc has started");

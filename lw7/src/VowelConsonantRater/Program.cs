@@ -37,6 +37,8 @@ namespace VowelConsonantRater
 					Console.WriteLine($"{textId} to {_publishExchangeName} exchange");
 					rabbitMq.PublishToExchange(_publishExchangeName, textId);
 				}
+
+				Console.WriteLine("----------");
 			});
 
 			Console.WriteLine("VowelConsonantRater has started");
