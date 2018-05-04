@@ -25,6 +25,7 @@ namespace VowelConsonantCounter
 			rabbitMq.BindQueueToExchange(_listeningExchangeName);
 			rabbitMq.ConsumeQueue(textId =>
 			{
+				Console.WriteLine($"New message from {_listeningExchangeName}: \"{textId}\"");
 				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
 
 				string text = Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Text}{textId}");

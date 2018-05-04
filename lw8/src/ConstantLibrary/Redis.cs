@@ -10,6 +10,7 @@
 			public const string Text = "text_";
 			public const string Count = "count_";
 			public const string Rank = "rank_";
+			public const string Status = "status_";
 		}
 
 		public static class Statistics

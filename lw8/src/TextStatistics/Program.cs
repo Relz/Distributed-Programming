@@ -20,6 +20,7 @@ namespace TextStatistics
 			rabbitMq.BindQueueToExchange(_listeningExchangeName);
 			rabbitMq.ConsumeQueue(textId =>
 			{
+				Console.WriteLine($"New message from {_listeningExchangeName}: \"{textId}\"");
 				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
 				double rank = Double.Parse(Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Rank}{textId}"));
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Rank}{textId}: {rank}' from redis database({Redis.Instance.Database.Database})");

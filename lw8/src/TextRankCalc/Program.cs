@@ -14,10 +14,11 @@ namespace TextRankCalc
 			rabbitMq.QueueDeclare();
 			rabbitMq.ExchangeDeclare(_listeningExchangeName, ExchangeType.Fanout);
 			rabbitMq.BindQueueToExchange(_listeningExchangeName);
-			rabbitMq.ConsumeQueue(id =>
+			rabbitMq.ConsumeQueue(textId =>
 			{
-				Console.WriteLine($"{id} to {_publishExchangeName} exchange");
-				rabbitMq.PublishToExchange(_publishExchangeName, id);
+				Console.WriteLine($"New message from {_listeningExchangeName}: \"{textId}\"");
+				Console.WriteLine($"{textId} to {_publishExchangeName} exchange");
+				rabbitMq.PublishToExchange(_publishExchangeName, textId);
 
 				Console.WriteLine("----------");
 			});
