@@ -25,7 +25,7 @@ namespace VowelConsonantRater
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {countDataString}' from redis database({Redis.Instance.Database.Database})");
 				Redis.Instance.Database.KeyDelete(countKey);
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Count}{textId}: {countDataString}' deleted from redis database({Redis.Instance.Database.Database})");
-				string[] countData = countDataString.Split('|');
+				string[] countData = countDataString.Split(ConstantLibrary.RabbitMq.Delimiter);
 				int vowelCount;
 				int consonantCount;
 				if (Int32.TryParse(countData[0], out vowelCount) && Int32.TryParse(countData[1], out consonantCount))

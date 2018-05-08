@@ -8,12 +8,12 @@ namespace TextProcessingLimiter
 	class Program
 	{
 		private const string _textListeningExchangeName = "backend-api";
-		private const string _textMarkersListeningExchangeName = "text-markers";
-		private const string _publishExchangeName = "text-processing";
+		private const string _textMarkersListeningExchangeName = "text-success-marker";
+		private const string _publishExchangeName = "processing-limiter";
 
 		private const int _limit = 3;
 
-		private static IDictionary<string, int> _textSuccessMarkersCount = new Dictionary<string, int>();
+		private static int _succeededTextCount = 0;
 
 		static void Main()
 		{
@@ -28,12 +28,15 @@ namespace TextProcessingLimiter
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Status}{textId}: processing' to redis database({Redis.Instance.Database.Database})");
 				Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Status}{textId}", "processing");
 
-				int textSuccessMarkerCount;
-				if (!_textSuccessMarkersCount.TryGetValue(textId, out textSuccessMarkerCount) || textSuccessMarkerCount != _limit)
+				bool status = _succeededTextCount < _limit;
+				if (status)
 				{
-					Console.WriteLine($"{textId} to {_publishExchangeName} exchange");
-					rabbitMq.PublishToExchange(_publishExchangeName, textId);
+					++_succeededTextCount;
 				}
+				var stringToPublish = $"{textId}{ConstantLibrary.RabbitMq.Delimiter}" +
+					(status ? ConstantLibrary.RabbitMq.ProcessingLimiter.Status.True : ConstantLibrary.RabbitMq.ProcessingLimiter.Status.False);
+				Console.WriteLine($"{stringToPublish} to {_publishExchangeName} exchange");
+				rabbitMq.PublishToExchange(_publishExchangeName, stringToPublish);
 
 				Console.WriteLine("----------");
 			});
@@ -44,19 +47,13 @@ namespace TextProcessingLimiter
 			rabbitMq.ConsumeQueue(textIdMarker =>
 			{
 				Console.WriteLine($"New message from {_textMarkersListeningExchangeName}: \"{textIdMarker}\"");
-				string[] data = textIdMarker.Split('|');
-				bool isTextSucceeded = data[1] == "true";
-				if (isTextSucceeded)
+
+				string[] data = textIdMarker.Split(ConstantLibrary.RabbitMq.Delimiter);
+				bool isTextSucceeded = data[1] == ConstantLibrary.RabbitMq.TextSuccessMarker.Status.True;
+				if (!isTextSucceeded)
 				{
-					var textId = data[0];
-					if (!_textSuccessMarkersCount.ContainsKey(textId))
-					{
-						_textSuccessMarkersCount.Add(textId, 0);
-					}
-					++_textSuccessMarkersCount[textId];
-					int textSuccessMarkerCount;
-					_textSuccessMarkersCount.TryGetValue(textId, out textSuccessMarkerCount);
-					Console.WriteLine($"{textId}: {textSuccessMarkerCount}");
+					Console.WriteLine("Succeeded text count reset");
+					_succeededTextCount = 0;
 				}
 
 				Console.WriteLine("----------");
