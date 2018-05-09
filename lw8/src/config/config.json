@@ -19,14 +19,22 @@
 		},
 		{
 			"name": "VowelConsonantCounter",
-			"count": 3
+			"count": 1
 		},
 		{
 			"name": "VowelConsonantRater",
-			"count": 2
+			"count": 1
 		},
 		{
 			"name": "TextStatistics",
+			"count": 1
+		},
+		{
+			"name": "TextProcessingLimiter",
+			"count": 1
+		},
+		{
+			"name": "TextSuccessMarker",
 			"count": 1
 		}
 	]

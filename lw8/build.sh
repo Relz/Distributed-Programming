@@ -38,7 +38,8 @@ programs=(
 	"VowelConsonantCounter"
 	"VowelConsonantRater"
 	"TextStatistics"
-	"TextProcessingLimiter" )
+	"TextProcessingLimiter"
+	"TextSuccessMarker" )
 
 elementsToCopy=(
 	"run.sh"

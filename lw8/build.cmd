@@ -41,6 +41,8 @@ call :build "TextRankCalc"
 call :build "VowelConsonantCounter"
 call :build "VowelConsonantRater"
 call :build "TextStatistics"
+call :build "TextProcessingLimiter"
+call :build "TextSuccessMarker"
 
 cd %scriptPath%
 
