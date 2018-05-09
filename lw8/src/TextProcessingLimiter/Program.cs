@@ -25,13 +25,18 @@ namespace TextProcessingLimiter
 			{
 				Console.WriteLine($"New message from {_textListeningExchangeName}: \"{textId}\"");
 				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
-				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Status}{textId}: processing' to redis database({Redis.Instance.Database.Database})");
-				Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Status}{textId}", "processing");
 
 				bool status = _succeededTextCount < _limit;
 				if (status)
 				{
 					++_succeededTextCount;
+					Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Status}{textId}: {ConstantLibrary.Redis.Status.Accepted}' to redis database({Redis.Instance.Database.Database})");
+					Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Status}{textId}", ConstantLibrary.Redis.Status.Accepted);
+				}
+				else
+				{
+					Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Status}{textId}: {ConstantLibrary.Redis.Status.Rejected}' to redis database({Redis.Instance.Database.Database})");
+					Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Status}{textId}", ConstantLibrary.Redis.Status.Rejected);
 				}
 				var stringToPublish = $"{textId}{ConstantLibrary.RabbitMq.Delimiter}" +
 					(status ? ConstantLibrary.RabbitMq.ProcessingLimiter.Status.True : ConstantLibrary.RabbitMq.ProcessingLimiter.Status.False);
