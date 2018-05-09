@@ -1,17 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RestoreSources>$(RestoreSources);../Libraries</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ConstantLibrary\ConstantLibrary.csproj" />
-    <ProjectReference Include="..\RedisLibrary\RedisLibrary.csproj" />
-    <ProjectReference Include="..\RabbitMqLibrary\RabbitMqLibrary.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="ConstantLibrary" Version="1.0.0" />
+    <PackageReference Include="RedisLibrary" Version="1.0.0" />
+    <PackageReference Include="RabbitMqLibrary" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
   </ItemGroup>
 

@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RestoreSources>$(RestoreSources);../Libraries</RestoreSources>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\ConstantLibrary\ConstantLibrary.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
+    <PackageReference Include="ConstantLibrary" Version="1.0.0" />
     <PackageReference Include="StackExchange.Redis" Version="1.2.7-alpha-00002"/>
   </ItemGroup>
 </Project>

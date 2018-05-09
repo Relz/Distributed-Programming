@@ -15,7 +15,13 @@ done <<< "$1"
 buildDirectory=$1
 scriptPath="$( cd "$(dirname "$0")" ; pwd -P)"
 
-build()
+packLibrary()
+{
+	cd $scriptPath/src/$1
+	dotnet pack --configuration Release -o $scriptPath/src/Libraries
+}
+
+buildProgram()
 {
 	cd $scriptPath/src/$1
 	dotnet publish --configuration Release --framework netcoreapp2.0 -o $scriptPath/$buildDirectory/$1 /property:PublishWithAspNetCoreTargetManifest=false
@@ -29,6 +35,12 @@ copy()
 		cp $scriptPath/src/$1 $scriptPath/$buildDirectory/$1
 	fi
 }
+
+libraries=(
+	"ConstantLibrary"
+	"ModelLibrary"
+	"RabbitMqLibrary"
+	"RedisLibrary" )
 
 programs=(
 	"Frontend"
@@ -48,9 +60,14 @@ elementsToCopy=(
 	"stop.cmd"
 	"config" )
 
+for library in ${libraries[@]}
+do
+	packLibrary $library
+done
+
 for program in ${programs[@]}
 do
-	build $program
+	buildProgram $program
 done
 
 for element in ${elementsToCopy[@]}

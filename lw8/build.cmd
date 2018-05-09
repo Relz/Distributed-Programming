@@ -34,15 +34,20 @@ set scriptPath="%cd%"
 
 mkdir %scriptPath%\%buildDirectory%
 
-call :build "Frontend"
-call :build "Backend"
-call :build "TextListener"
-call :build "TextRankCalc"
-call :build "VowelConsonantCounter"
-call :build "VowelConsonantRater"
-call :build "TextStatistics"
-call :build "TextProcessingLimiter"
-call :build "TextSuccessMarker"
+call :packLibrary "ConstantLibrary"
+call :packLibrary "ModelLibrary"
+call :packLibrary "RabbitMqLibrary"
+call :packLibrary "RedisLibrary"
+
+call :buildProgram "Frontend"
+call :buildProgram "Backend"
+call :buildProgram "TextListener"
+call :buildProgram "TextRankCalc"
+call :buildProgram "VowelConsonantCounter"
+call :buildProgram "VowelConsonantRater"
+call :buildProgram "TextStatistics"
+call :buildProgram "TextProcessingLimiter"
+call :buildProgram "TextSuccessMarker"
 
 cd %scriptPath%
 
@@ -54,7 +59,12 @@ call :copy "config" "D"
 
 exit /B %ERRORLEVEL%
 
-:build
+:packLibrary
+	cd %scriptPath%\src\%~1
+	dotnet pack --configuration Release -o %scriptPath%\src\Libraries
+exit /B 0
+
+:buildProgram
 	cd %scriptPath%\src\%~1
 	dotnet publish --configuration Release --framework netcoreapp2.0 -o %scriptPath%\%buildDirectory%\%~1 /property:PublishWithAspNetCoreTargetManifest=false
 exit /B 0

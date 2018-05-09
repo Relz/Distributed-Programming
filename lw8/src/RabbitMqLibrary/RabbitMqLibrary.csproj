@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RestoreSources>$(RestoreSources);../Libraries</RestoreSources>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\ConstantLibrary\ConstantLibrary.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="RabbitMQ.Client" Version="5.1.0-rc1"/>
+    <PackageReference Include="ConstantLibrary" Version="1.0.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="5.1.0-rc1" />
   </ItemGroup>
 </Project>

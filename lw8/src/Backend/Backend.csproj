@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RestoreSources>$(RestoreSources);../Libraries</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,13 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ConstantLibrary\ConstantLibrary.csproj"/>
-    <ProjectReference Include="..\ModelLibrary\ModelLibrary.csproj"/>
-    <ProjectReference Include="..\RabbitMqLibrary\RabbitMqLibrary.csproj"/>
-    <ProjectReference Include="..\RedisLibrary\RedisLibrary.csproj"/>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="ConstantLibrary" Version="1.0.0" />
+    <PackageReference Include="ModelLibrary" Version="1.0.0" />
+    <PackageReference Include="RabbitMqLibrary" Version="1.0.0" />
+    <PackageReference Include="RedisLibrary" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
   </ItemGroup>
 
