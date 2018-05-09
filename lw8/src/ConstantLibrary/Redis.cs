@@ -13,6 +13,14 @@
 			public const string Status = "status_";
 		}
 
+		public static class Status
+		{
+			public const string Accepted = "Accepted";
+			public const string Rejected = "Rejected";
+			public const string Processing = "Processing";
+			public const string Completed = "Completed";
+		}
+
 		public static class Statistics
 		{
 			public const int DatabaseId = 11;
