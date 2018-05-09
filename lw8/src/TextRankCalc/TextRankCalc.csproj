@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ConstantLibrary\ConstantLibrary.csproj" />
     <ProjectReference Include="..\RabbitMqLibrary\RabbitMqLibrary.csproj" />
+    <ProjectReference Include="..\RedisLibrary\RedisLibrary.csproj" />
   </ItemGroup>
 
   <ItemGroup>
