@@ -35,6 +35,9 @@ namespace VowelConsonantRater
 					Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Rank}{textId}: {rank}' to redis database({Redis.Instance.Database.Database})");
 					Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Rank}{textId}", rank);
 
+					Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Status}{textId}: {ConstantLibrary.Redis.Status.Completed}' to redis database({Redis.Instance.Database.Database})");
+					Redis.Instance.Database.StringSet($"{ConstantLibrary.Redis.Prefix.Status}{textId}", ConstantLibrary.Redis.Status.Completed);
+
 					Console.WriteLine($"{textId} to {_publishExchangeName} exchange");
 					rabbitMq.PublishToExchange(_publishExchangeName, textId);
 				}
