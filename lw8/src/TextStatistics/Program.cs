@@ -7,7 +7,7 @@ namespace TextStatistics
 {
 	class Program
 	{
-		private const string _listeningExchangeName = "text-rank-calc";
+		private const string _listeningExchangeName = "text-success-marker";
 
 		private static Statistics _statistics = new Statistics();
 
@@ -18,15 +18,20 @@ namespace TextStatistics
 			rabbitMq.QueueDeclare();
 			rabbitMq.ExchangeDeclare(_listeningExchangeName, ExchangeType.Fanout);
 			rabbitMq.BindQueueToExchange(_listeningExchangeName);
-			rabbitMq.ConsumeQueue(textId =>
+			rabbitMq.ConsumeQueue(textIdAndStatus =>
 			{
-				Console.WriteLine($"New message from {_listeningExchangeName}: \"{textId}\"");
+				Console.WriteLine($"New message from {_listeningExchangeName}: \"{textIdAndStatus}\"");
+
+				string[] splittedMessage = textIdAndStatus.Split(ConstantLibrary.RabbitMq.Delimiter);
+				string textId = splittedMessage[0];
+				bool isSucceededText = splittedMessage[1] == ConstantLibrary.RabbitMq.TextSuccessMarker.Status.True;
+
 				Redis.Instance.SetDatabase(Redis.Instance.CalculateDatabase(textId));
 				double rank = Double.Parse(Redis.Instance.Database.StringGet($"{ConstantLibrary.Redis.Prefix.Rank}{textId}"));
 				Console.WriteLine($"'{ConstantLibrary.Redis.Prefix.Rank}{textId}: {rank}' from redis database({Redis.Instance.Database.Database})");
 
 				++_statistics.TotalTextCount;
-				if (rank > 0.5)
+				if (isSucceededText)
 				{
 					++_statistics.HighRankCount;
 				}
