@@ -1,9 +1,10 @@
-@model Frontend.Models.TextDetailsModel;
+@model ModelLibrary.TextDetails;
 @{
 	ViewData["Title"] = "Text details Page";
 }
 
 <legend>Text details</legend>
 <div class="form-group">
-	@Html.TextBoxFor(model => model.Rank)
+	Status: @Html.TextBoxFor(model => model.Status)
+	Rank: @Html.TextBoxFor(model => model.Rank)
 </div>

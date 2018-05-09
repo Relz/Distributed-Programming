@@ -31,31 +31,34 @@ namespace Frontend.Controllers
 						id = content.ReadAsStringAsync().Result;
 					}
 				}
-				TextDetailsModel textDetailsModel = new TextDetailsModel();
-				textDetailsModel.Id = id;
+				TextDetails textDetails = new TextDetails();
+				textDetails.Id = id;
 
-				return RedirectToAction("TextDetails", "Home", textDetailsModel);
+				return RedirectToAction("TextDetails", "Home", textDetails);
 			}
 			return View(formModel);
 		}
 
-		public async Task<IActionResult> TextDetails(TextDetailsModel textDetailsModel)
+		public async Task<IActionResult> TextDetails(TextDetails textDetails)
 		{
-			if (textDetailsModel.Id != null)
+			TextDetails result = null;
+			if (textDetails.Id != null)
 			{
 				uint retries = 0;
-				string result = null;
 				while (result == null && retries != 5)
 				{
-					result = await GetTextDetails(textDetailsModel.Id);
-					++retries;
+					result = await TryToGetTextDetails(textDetails.Id);
+					if (result == null)
+					{
+						++retries;
+						System.Threading.Thread.Sleep(2000);
+					}
 				}
-				textDetailsModel.Rank = (result == null) ? "Something went wrong..." : result;
 			}
-			return View(textDetailsModel);
+			return View(result);
 		}
 
-		private async Task<string> GetTextDetails(string id)
+		private async Task<TextDetails> TryToGetTextDetails(string id)
 		{
 			string url = $"http://127.0.0.1:5050/api/text_details/{id}";
 			using (HttpClient httpClient = new HttpClient())
@@ -64,14 +67,9 @@ namespace Frontend.Controllers
 				using (HttpResponseMessage response = await httpClient.GetAsync(url))
 				using (HttpContent content = response.Content)
 				{
-					string result = content.ReadAsStringAsync().Result;
-					if (result != "Hasn't calculated yet")
-					{
-						return result;
-					}
+					return JsonConvert.DeserializeObject<TextDetails>(content.ReadAsStringAsync().Result);
 				}
 			}
-			System.Threading.Thread.Sleep(2000);
 			return null;
 		}
 
