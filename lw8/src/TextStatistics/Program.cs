@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using ModelLibrary;
 using RabbitMqLibrary;
 using RedisLibrary;
@@ -69,7 +70,7 @@ namespace TextStatistics
 			}
 			if (Redis.Instance.Database.KeyExists(ConstantLibrary.Redis.Statistics.TotalRank))
 			{
-				_statistics.TotalRank = Double.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Statistics.TotalRank));
+				_statistics.TotalRank = Double.Parse(Redis.Instance.Database.StringGet(ConstantLibrary.Redis.Statistics.TotalRank), CultureInfo.InvariantCulture);
 				Console.WriteLine($"'{ConstantLibrary.Redis.Statistics.TotalRank}: {_statistics.TotalRank}' from redis database({Redis.Instance.Database.Database})");
 			}
 		}
