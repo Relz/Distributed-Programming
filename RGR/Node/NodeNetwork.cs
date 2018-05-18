@@ -1,14 +1,16 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using NetMQ.Sockets;
+using ModelLibrary;
 
 namespace Node
 {
-	public class NodeNetwork : IEnumerable<KeyValuePair<string, Node>>
+	public class NodeNetwork : IEnumerable<KeyValuePair<string, NodeModel>>
 	{
-		private readonly IDictionary<string, Node> _nodes = new Dictionary<string, Node>();
+		private readonly IDictionary<string, NodeModel> _nodes = new Dictionary<string, NodeModel>();
 
-		public IEnumerator<KeyValuePair<string, Node>> GetEnumerator()
+		public IEnumerator<KeyValuePair<string, NodeModel>> GetEnumerator()
 		{
 			return _nodes.GetEnumerator();
 		}
@@ -18,21 +20,35 @@ namespace Node
 			return GetEnumerator();
 		}
 
-		public void Add(Node node)
+		public void Add(NodeModel nodeModel)
 		{
-			_nodes.Add(node.Name, node);
+			_nodes.Add(nodeModel.Name, nodeModel);
 		}
 
-		public bool TryGetValue(string name, out Node node)
+		public void Start(NodeModel me)
 		{
-			return _nodes.TryGetValue(name, out node);
-		}
-
-		public void Start()
-		{
-			foreach (var (_, node) in _nodes)
+			Console.Write($"Binding to tcp: 127.0.0.1:{me.Port}");
+			try
 			{
-				node.Socket = new PairSocket($">tcp://127.0.0.1:{node.Port},@tcp://127.0.0.1:{node.Port}");
+				me.Socket = new PairSocket($">tcp://127.0.0.1:{me.Port}");
+			}
+			catch (Exception)
+			{
+				Console.WriteLine(" [FAIL]");
+			}
+			Console.WriteLine(" [OK]");
+			foreach (var (_, nodeModel) in _nodes)
+			{
+				Console.Write($"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.Port}");
+				try
+				{
+					nodeModel.Socket = new PairSocket($"@tcp://127.0.0.1:{nodeModel.Port}");
+				}
+				catch (Exception)
+				{
+					Console.WriteLine(" [FAIL]");
+				}
+				Console.WriteLine(" [OK]");
 			}
 		}
 	}

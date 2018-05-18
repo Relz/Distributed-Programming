@@ -2,19 +2,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using NetMQ;
-using NetMQ.Sockets;
 using Newtonsoft.Json.Linq;
+using ModelLibrary;
+using NetMQ;
 
 namespace Node
 {
 	internal static class Program
 	{
-		private const string ConfigFileName = "config.json";
+		private const string ConfigFileName = "../config.json";
 		
-		private static Node me = new Node();
+		private static NodeModel me = new NodeModel();
 		private static readonly NodeNetwork NodeNetwork = new NodeNetwork();
 		private static readonly IDictionary<string, IList<int>> Services = new Dictionary<string, IList<int>>();
 
@@ -26,10 +25,8 @@ namespace Node
 				return;
 			}
 			
-			NodeNetwork.Add(me);
-
 			ReadConfig();
-			NodeNetwork.Start();
+			NodeNetwork.Start(me);
 			Task.Factory.StartNew(state => ServerActivity(), string.Format($"Server {me.Name}"), TaskCreationOptions.LongRunning);
 			
 			foreach (var (_, node) in NodeNetwork)
@@ -71,22 +68,28 @@ namespace Node
 				{
 					me.Port = port;
 				}
+				else
 				{
-					NodeNetwork.Add(new Node(name, port));
+					NodeNetwork.Add(new NodeModel(name, port));
 				}
 			}
 		}
 
 		private static void ServerActivity()
 		{
+			Console.WriteLine("Waiting for message...");
+			bool signal = me.Socket.ReceiveSignal();
+			WriteMessageLine("Handshake");
+			me.Socket.SignalOK();
 			while (true)
 			{
 				string message = me.Socket.ReceiveFrameString();
-				WriteMessageLine($"Received: {message}");
+				WriteMessageLine($"Received message: {message}");
+				me.Socket.SendFrame(message);
 			}
 		}
 
-		private static void ClientActivity(Node node)
+		private static void ClientActivity(NodeModel node)
 		{
 		}
 	}

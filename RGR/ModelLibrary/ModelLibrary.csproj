@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NetMQ, Version=4.0.0.156, Culture=neutral, PublicKeyToken=a6decef4ddc58b3a">
+      <HintPath>C:\Users\alexey.starovoitov\.nuget\packages\netmq\4.0.0.156-pre\lib\netstandard1.3\NetMQ.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
