@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using NetMQ.Sockets;
+using LogFileLibrary;
 using ModelLibrary;
 using NetMQ;
+using NetMQ.Sockets;
 
 namespace Node
 {
 	public class NodeNetwork : IEnumerable<KeyValuePair<string, NodeModel>>
 	{
 		private readonly IDictionary<string, NodeModel> _nodes = new Dictionary<string, NodeModel>();
+		private readonly LogFile _logFile;
+
+		public NodeNetwork(LogFile logFile)
+		{
+			_logFile = logFile;
+		}
 
 		public IEnumerator<KeyValuePair<string, NodeModel>> GetEnumerator()
 		{
@@ -40,44 +46,51 @@ namespace Node
 			StartMyself(me);
 			foreach (var (_, nodeModel) in _nodes)
 			{
-				Console.Write($"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.Port}");
+				string logMessage = $"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.Port}";
 				try
 				{
 					nodeModel.Socket = new PushSocket($">tcp://127.0.0.1:{nodeModel.Port}");
 				}
 				catch (Exception)
 				{
-					Console.WriteLine(" [FAIL]");
+					logMessage += " [FAIL]";
+					_logFile.AddLine(logMessage);
 					continue;
 				}
-				Console.WriteLine(" [OK]");
+
+				logMessage += " [OK]";
+				_logFile.AddLine(logMessage);
 			}
 		}
 
 		private void StartMyself(NodeModel me)
 		{
-			Console.Write($"Binding to tcp: 127.0.0.1:{me.Port}1");
+			string logMessage = $"Binding to tcp: 127.0.0.1:{me.Port}1";
 			try
 			{
 				me.ManagingSocket = new PairSocket($"@tcp://127.0.0.1:{me.Port}1");
 			}
 			catch (Exception)
 			{
-				Console.WriteLine(" [FAIL]");
+				logMessage += " [FAIL]";
+				_logFile.AddLine(logMessage);
 				return;
 			}
-			Console.WriteLine(" [OK]");
-			Console.Write($"Binding to tcp: 127.0.0.1:{me.Port}");
+			logMessage += " [OK]";
+			_logFile.AddLine(logMessage);
+			logMessage = $"Binding to tcp: 127.0.0.1:{me.Port}";
 			try
 			{
 				me.Socket = new RouterSocket($"@tcp://127.0.0.1:{me.Port}");
 			}
 			catch (Exception)
 			{
-				Console.WriteLine(" [FAIL]");
+				logMessage += " [FAIL]";
+				_logFile.AddLine(logMessage);
 				return;
 			}
-			Console.WriteLine(" [OK]");
+			logMessage += " [OK]";
+			_logFile.AddLine(logMessage);
 		}
 	}
 }

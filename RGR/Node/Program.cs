@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using LogFileLibrary;
 using Newtonsoft.Json.Linq;
 using ModelLibrary;
 using NetMQ;
@@ -14,10 +15,11 @@ namespace Node
 		private const string ConfigFileName = "../config.json";
 		private const string Success = "Success";
 		private const string Failure = "Failure";
-		
+
 		private static NodeModel me = new NodeModel();
-		private static readonly NodeNetwork NodeNetwork = new NodeNetwork();
+		private static NodeNetwork _nodeNetwork;
 		private static readonly IDictionary<string, ISet<int>> Services = new Dictionary<string, ISet<int>>();
+		private static LogFile _logFile;
 
 		private static void Main(string[] args)
 		{
@@ -27,23 +29,14 @@ namespace Node
 				return;
 			}
 			
+			_logFile = new LogFile($"{me.Name}.log");
+			_nodeNetwork = new NodeNetwork(_logFile);
 			ReadConfig();
-			NodeNetwork.Start(me);
+			_nodeNetwork.Start(me);
 			Task.Factory.StartNew(state => ServerActivity(), string.Format($"Server {me.Name}"), TaskCreationOptions.LongRunning);
 			Task.Factory.StartNew(state => NodeActivity(), string.Format($"Node {me.Name}"), TaskCreationOptions.LongRunning);
 			
 			Console.ReadKey();
-		}
-
-		private static void WriteMessage(string message)
-		{
-			Console.Write($"Node {me.Name}({me.Port}): {message}");
-		}
-
-		private static void WriteMessageLine(string message)
-		{
-			WriteMessage(message);
-			Console.WriteLine();
 		}
 
 		private static bool GetNodeNameFromArguments(string[] args)
@@ -68,7 +61,7 @@ namespace Node
 				}
 				else
 				{
-					NodeNetwork.Add(new NodeModel(name, port));
+					_nodeNetwork.Add(new NodeModel(name, port));
 				}
 			}
 		}
@@ -78,7 +71,7 @@ namespace Node
 			while (true)
 			{
 				string message = me.ManagingSocket.ReceiveFrameString();
-				WriteMessageLine($"Received message from Manager: {message}");
+				_logFile.AddLine($"Received message from Manager: {message}");
 				string[] command = message.Split(' ');
 				switch (command[0])
 				{
@@ -93,12 +86,12 @@ namespace Node
 						me.ManagingSocket.SendFrame(serviceAddresses == null ? "" : string.Join(", ", serviceAddresses));
 						break;
 					case "START":
-						NodeNetwork.SendFrame(message);
+						_nodeNetwork.SendFrame(message);
 						Services.TryAdd(command[1], new HashSet<int>());
 						me.ManagingSocket.SendFrame(int.TryParse(command[2], out var port) && Services[command[1]].Add(port) ? Success : Failure);
 						break;
 					case "STOP":
-						NodeNetwork.SendFrame(message);
+						_nodeNetwork.SendFrame(message);
 						me.ManagingSocket.SendFrame(Services.ContainsKey(command[1]) && Services[command[1]].Remove(int.Parse(command[2])) ? Success : Failure);
 						break;
 				}
@@ -110,7 +103,7 @@ namespace Node
 			while (true)
 			{
 				string message = me.Socket.ReceiveMultipartStrings().ElementAt(1);
-				WriteMessageLine($"Received message from Node: {message}");
+				_logFile.AddLine($"Received message from Node: {message}");
 				string[] command = message.Split(' ');
 				switch (command[0])
 				{
