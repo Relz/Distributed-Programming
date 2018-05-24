@@ -12,10 +12,12 @@ namespace Node
 	internal static class Program
 	{
 		private const string ConfigFileName = "../config.json";
+		private const string Success = "Success";
+		private const string Failure = "Failure";
 		
 		private static NodeModel me = new NodeModel();
 		private static readonly NodeNetwork NodeNetwork = new NodeNetwork();
-		private static readonly IDictionary<string, IList<int>> Services = new Dictionary<string, IList<int>>();
+		private static readonly IDictionary<string, ISet<int>> Services = new Dictionary<string, ISet<int>>();
 
 		private static void Main(string[] args)
 		{
@@ -77,15 +79,34 @@ namespace Node
 
 		private static void ServerActivity()
 		{
-			Console.WriteLine("Waiting for message...");
-			bool signal = me.Socket.ReceiveSignal();
-			WriteMessageLine("Handshake");
-			me.Socket.SignalOK();
 			while (true)
 			{
 				string message = me.Socket.ReceiveFrameString();
 				WriteMessageLine($"Received message: {message}");
-				me.Socket.SendFrame(message);
+				string[] command = message.Split(' ');
+				switch (command[0])
+				{
+					case "PING":
+						me.Socket.SendFrameEmpty();
+						break;
+					case "BYE":
+						me.Socket.SendFrameEmpty();
+						break;
+					case "WHERE":
+						Services.TryGetValue(command[1], out var serviceAddresses);
+						me.Socket.SendFrame(serviceAddresses == null ? "" : string.Join(", ", serviceAddresses));
+						break;
+					case "START":
+						Services.TryAdd(command[1], new HashSet<int>());
+						me.Socket.SendFrame(int.TryParse(command[2], out var port) && Services[command[1]].Add(port) ? Success : Failure);
+						break;
+					case "STOP":
+						me.Socket.SendFrame(Services.ContainsKey(command[1]) && Services[command[1]].Remove(int.Parse(command[2])) ? Success : Failure);
+						break;
+					default:
+						break;
+				}
+				
 			}
 		}
 

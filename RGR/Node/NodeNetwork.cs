@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using NetMQ.Sockets;
 using ModelLibrary;
 
@@ -27,29 +28,36 @@ namespace Node
 
 		public void Start(NodeModel me)
 		{
-			Console.Write($"Binding to tcp: 127.0.0.1:{me.Port}");
-			try
-			{
-				me.Socket = new PairSocket($">tcp://127.0.0.1:{me.Port}");
-			}
-			catch (Exception)
-			{
-				Console.WriteLine(" [FAIL]");
-			}
-			Console.WriteLine(" [OK]");
+			StartMyself(me);
 			foreach (var (_, nodeModel) in _nodes)
 			{
 				Console.Write($"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.Port}");
 				try
 				{
-					nodeModel.Socket = new PairSocket($"@tcp://127.0.0.1:{nodeModel.Port}");
+					nodeModel.Socket = new PairSocket($">tcp://127.0.0.1:{nodeModel.Port}");
 				}
 				catch (Exception)
 				{
 					Console.WriteLine(" [FAIL]");
+					continue;
 				}
 				Console.WriteLine(" [OK]");
 			}
+		}
+
+		private void StartMyself(NodeModel me)
+		{
+			Console.Write($"Binding to tcp: 127.0.0.1:{me.Port}");
+			try
+			{
+				me.Socket = new PairSocket($"@tcp://127.0.0.1:{me.Port}");
+			}
+			catch (Exception)
+			{
+				Console.WriteLine(" [FAIL]");
+				return;
+			}
+			Console.WriteLine(" [OK]");
 		}
 	}
 }

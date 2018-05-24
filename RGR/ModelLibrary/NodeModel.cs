@@ -1,4 +1,4 @@
-﻿using NetMQ.Sockets;
+﻿using NetMQ;
 
 namespace ModelLibrary
 {
@@ -16,6 +16,6 @@ namespace ModelLibrary
 		
 		public string Name { get; set; }
 		public string Port { get; set; }
-		public PairSocket Socket { get; set; }
+		public NetMQSocket Socket { get; set; }
 	}
 }

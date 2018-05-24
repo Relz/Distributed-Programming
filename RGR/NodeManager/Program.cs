@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using ModelLibrary;
 using NetMQ;
 using NetMQ.Sockets;
@@ -19,32 +21,50 @@ namespace NodeManager
 		{
 			ReadConfig();
 			WriteNodes();
-			int nodeSerialNumber = AskNodeSerialNumberToConnect();
-			NodeModel nodeModel = Nodes.ElementAt(nodeSerialNumber - 1);
-			Console.Write($"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.Port}");
-			try
+			while (true)
 			{
-				nodeModel.Socket = new PairSocket($"@tcp://127.0.0.1:{nodeModel.Port}");
-			}
-			catch (Exception)
-			{
-				Console.WriteLine(" [FAIL]");
-				return;
-			}
-			Console.WriteLine(" [OK]");
+				Console.Write("Type node serial number to connect: ");
+				string command = Console.ReadLine();
+				if (command == "EXIT")
+				{
+					break;
+				}
+				if (!int.TryParse(command, out var nodeSerialNumber) || nodeSerialNumber < 1 || nodeSerialNumber > Nodes.Count)
+				{
+					continue;
+				}
 
-			Console.Write("Handshake");
-			if (!DoesHandshakeSucceeded(nodeModel))
-			{
-				Console.WriteLine(" [FAIL]");
-				return;
-			}
-			Console.WriteLine(" [OK]");
+				NodeModel nodeModel = Nodes.ElementAt(nodeSerialNumber - 1);
+				if (nodeModel.Socket == null)
+				{
+					Console.Write($"Creating connection to tcp socket: 127.0.0.1:{nodeModel.Port}");
+					try
+					{
+						nodeModel.Socket = new PairSocket($">tcp://127.0.0.1:{nodeModel.Port}");
+					}
+					catch (Exception e)
+					{
+						Console.WriteLine(" [FAIL]");
+						Console.WriteLine(e.Message);
+						continue;
+					}
+					Console.WriteLine(" [OK]");
+				}
 
-			CommandValidator commandValidator = new CommandValidator();
-			InitializeCommandValidator(commandValidator);
-			
-			CommunicateWithNode(nodeModel, commandValidator);
+				Console.Write("Handshake");
+				if (!DoesHandshakeSucceeded(nodeModel))
+				{
+					Console.WriteLine(" [FAIL]");
+					continue;
+				}
+
+				Console.WriteLine(" [OK]");
+
+				CommandValidator commandValidator = new CommandValidator();
+				InitializeCommandValidator(commandValidator);
+
+				CommunicateWithNode(nodeModel, commandValidator);
+			}
 		}
 
 		private static void ReadConfig()
@@ -67,21 +87,9 @@ namespace NodeManager
 			}
 		}
 
-		private static int AskNodeSerialNumberToConnect()
-		{
-			int serialNumber;
-			do
-			{
-				Console.Write("Type node serial number to connect: ");
-			} while (!int.TryParse(Console.ReadLine(), out serialNumber) || serialNumber < 1 || serialNumber >= Nodes.Count);
-
-			return serialNumber;
-		}
-
 		private static bool DoesHandshakeSucceeded(NodeModel nodeModel)
 		{
-			nodeModel.Socket.SignalOK();
-			return nodeModel.Socket.ReceiveSignal();
+			return nodeModel.Socket.TrySendFrame(TimeSpan.FromSeconds(3), "PING") && nodeModel.Socket.TryReceiveFrameString(TimeSpan.FromSeconds(3), out _);
 		}
 
 		private static void InitializeCommandValidator(CommandValidator commandValidator)
@@ -104,6 +112,7 @@ namespace NodeManager
 					commandValidator.WriteHelpForCommand(commandString);
 					continue;
 				}
+
 				nodeModel.Socket.SendFrame(commandString);
 				Console.WriteLine(nodeModel.Socket.ReceiveFrameString());
 			}
