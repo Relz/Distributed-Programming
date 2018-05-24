@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using NetMQ.Sockets;
 using ModelLibrary;
+using NetMQ;
 
 namespace Node
 {
@@ -26,6 +27,14 @@ namespace Node
 			_nodes.Add(nodeModel.Name, nodeModel);
 		}
 
+		public void SendFrame(string message)
+		{
+			foreach (var (_, nodeModel) in _nodes)
+			{
+				nodeModel.Socket.SendFrame(message);
+			}
+		}
+
 		public void Start(NodeModel me)
 		{
 			StartMyself(me);
@@ -34,7 +43,7 @@ namespace Node
 				Console.Write($"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.Port}");
 				try
 				{
-					nodeModel.Socket = new DealerSocket($">tcp://127.0.0.1:{nodeModel.Port}");
+					nodeModel.Socket = new PushSocket($">tcp://127.0.0.1:{nodeModel.Port}");
 				}
 				catch (Exception)
 				{

@@ -113,15 +113,8 @@ namespace NodeManager
 					continue;
 				}
 
-				try
-				{
-					nodeModel.ManagingSocket.SendFrame(commandString);
-					Console.WriteLine(nodeModel.ManagingSocket.ReceiveFrameString());
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e);
-				}
+				nodeModel.ManagingSocket.SendFrame(commandString);
+				Console.WriteLine(nodeModel.ManagingSocket.ReceiveFrameString());
 			}
 		}
 	}

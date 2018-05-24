@@ -30,11 +30,7 @@ namespace Node
 			ReadConfig();
 			NodeNetwork.Start(me);
 			Task.Factory.StartNew(state => ServerActivity(), string.Format($"Server {me.Name}"), TaskCreationOptions.LongRunning);
-			
-			foreach (var (_, node) in NodeNetwork)
-			{
-				Task.Factory.StartNew(state => ClientActivity(node), string.Format($"Client {node.Name}"), TaskCreationOptions.LongRunning);
-			}
+			Task.Factory.StartNew(state => NodeActivity(), string.Format($"Node {me.Name}"), TaskCreationOptions.LongRunning);
 			
 			Console.ReadKey();
 		}
@@ -82,7 +78,7 @@ namespace Node
 			while (true)
 			{
 				string message = me.ManagingSocket.ReceiveFrameString();
-				WriteMessageLine($"Received message: {message}");
+				WriteMessageLine($"Received message from Manager: {message}");
 				string[] command = message.Split(' ');
 				switch (command[0])
 				{
@@ -97,21 +93,40 @@ namespace Node
 						me.ManagingSocket.SendFrame(serviceAddresses == null ? "" : string.Join(", ", serviceAddresses));
 						break;
 					case "START":
+						NodeNetwork.SendFrame(message);
 						Services.TryAdd(command[1], new HashSet<int>());
 						me.ManagingSocket.SendFrame(int.TryParse(command[2], out var port) && Services[command[1]].Add(port) ? Success : Failure);
 						break;
 					case "STOP":
+						NodeNetwork.SendFrame(message);
 						me.ManagingSocket.SendFrame(Services.ContainsKey(command[1]) && Services[command[1]].Remove(int.Parse(command[2])) ? Success : Failure);
 						break;
-					default:
-						break;
 				}
-				
 			}
 		}
 
-		private static void ClientActivity(NodeModel node)
+		private static void NodeActivity()
 		{
+			while (true)
+			{
+				string message = me.Socket.ReceiveMultipartStrings().ElementAt(1);
+				WriteMessageLine($"Received message from Node: {message}");
+				string[] command = message.Split(' ');
+				switch (command[0])
+				{
+					case "START":
+						Services.TryAdd(command[1], new HashSet<int>());
+						int.TryParse(command[2], out var port);
+						Services[command[1]].Add(port);
+						break;
+					case "STOP":
+						if (Services.ContainsKey(command[1]))
+						{
+							Services[command[1]].Remove(int.Parse(command[2]));
+						}
+						break;
+				}
+			}
 		}
 	}
 }
