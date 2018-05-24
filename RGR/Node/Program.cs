@@ -81,27 +81,27 @@ namespace Node
 		{
 			while (true)
 			{
-				string message = me.Socket.ReceiveFrameString();
+				string message = me.ManagingSocket.ReceiveFrameString();
 				WriteMessageLine($"Received message: {message}");
 				string[] command = message.Split(' ');
 				switch (command[0])
 				{
 					case "PING":
-						me.Socket.SendFrameEmpty();
+						me.ManagingSocket.SendFrameEmpty();
 						break;
 					case "BYE":
-						me.Socket.SendFrameEmpty();
+						me.ManagingSocket.SendFrameEmpty();
 						break;
 					case "WHERE":
 						Services.TryGetValue(command[1], out var serviceAddresses);
-						me.Socket.SendFrame(serviceAddresses == null ? "" : string.Join(", ", serviceAddresses));
+						me.ManagingSocket.SendFrame(serviceAddresses == null ? "" : string.Join(", ", serviceAddresses));
 						break;
 					case "START":
 						Services.TryAdd(command[1], new HashSet<int>());
-						me.Socket.SendFrame(int.TryParse(command[2], out var port) && Services[command[1]].Add(port) ? Success : Failure);
+						me.ManagingSocket.SendFrame(int.TryParse(command[2], out var port) && Services[command[1]].Add(port) ? Success : Failure);
 						break;
 					case "STOP":
-						me.Socket.SendFrame(Services.ContainsKey(command[1]) && Services[command[1]].Remove(int.Parse(command[2])) ? Success : Failure);
+						me.ManagingSocket.SendFrame(Services.ContainsKey(command[1]) && Services[command[1]].Remove(int.Parse(command[2])) ? Success : Failure);
 						break;
 					default:
 						break;

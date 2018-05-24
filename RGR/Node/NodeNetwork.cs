@@ -34,7 +34,7 @@ namespace Node
 				Console.Write($"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.Port}");
 				try
 				{
-					nodeModel.Socket = new PairSocket($">tcp://127.0.0.1:{nodeModel.Port}");
+					nodeModel.Socket = new DealerSocket($">tcp://127.0.0.1:{nodeModel.Port}");
 				}
 				catch (Exception)
 				{
@@ -47,10 +47,21 @@ namespace Node
 
 		private void StartMyself(NodeModel me)
 		{
+			Console.Write($"Binding to tcp: 127.0.0.1:{me.Port}1");
+			try
+			{
+				me.ManagingSocket = new PairSocket($"@tcp://127.0.0.1:{me.Port}1");
+			}
+			catch (Exception)
+			{
+				Console.WriteLine(" [FAIL]");
+				return;
+			}
+			Console.WriteLine(" [OK]");
 			Console.Write($"Binding to tcp: 127.0.0.1:{me.Port}");
 			try
 			{
-				me.Socket = new PairSocket($"@tcp://127.0.0.1:{me.Port}");
+				me.Socket = new RouterSocket($"@tcp://127.0.0.1:{me.Port}");
 			}
 			catch (Exception)
 			{

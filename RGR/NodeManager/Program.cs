@@ -35,12 +35,12 @@ namespace NodeManager
 				}
 
 				NodeModel nodeModel = Nodes.ElementAt(nodeSerialNumber - 1);
-				if (nodeModel.Socket == null)
+				if (nodeModel.ManagingSocket == null)
 				{
-					Console.Write($"Creating connection to tcp socket: 127.0.0.1:{nodeModel.Port}");
+					Console.Write($"Creating connection to tcp socket: 127.0.0.1:{nodeModel.Port}1");
 					try
 					{
-						nodeModel.Socket = new PairSocket($">tcp://127.0.0.1:{nodeModel.Port}");
+						nodeModel.ManagingSocket = new PairSocket($">tcp://127.0.0.1:{nodeModel.Port}1");
 					}
 					catch (Exception e)
 					{
@@ -89,7 +89,7 @@ namespace NodeManager
 
 		private static bool DoesHandshakeSucceeded(NodeModel nodeModel)
 		{
-			return nodeModel.Socket.TrySendFrame(TimeSpan.FromSeconds(3), "PING") && nodeModel.Socket.TryReceiveFrameString(TimeSpan.FromSeconds(3), out _);
+			return nodeModel.ManagingSocket.TrySendFrame(TimeSpan.FromSeconds(3), "PING") && nodeModel.ManagingSocket.TryReceiveFrameString(TimeSpan.FromSeconds(3), out _);
 		}
 
 		private static void InitializeCommandValidator(CommandValidator commandValidator)
@@ -113,8 +113,15 @@ namespace NodeManager
 					continue;
 				}
 
-				nodeModel.Socket.SendFrame(commandString);
-				Console.WriteLine(nodeModel.Socket.ReceiveFrameString());
+				try
+				{
+					nodeModel.ManagingSocket.SendFrame(commandString);
+					Console.WriteLine(nodeModel.ManagingSocket.ReceiveFrameString());
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e);
+				}
 			}
 		}
 	}
