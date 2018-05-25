@@ -7,7 +7,7 @@ namespace LogFileLibrary
 	public class LogFile
 	{
 		private readonly StreamWriter _streamWriter;
-		
+
 		public LogFile(string fileName)
 		{
 			_streamWriter = new StreamWriter(fileName);
@@ -15,8 +15,9 @@ namespace LogFileLibrary
 
 		public void AddLine(string line)
 		{
-			_streamWriter.WriteLine($"{DateTime.Now.ToString(CultureInfo.InvariantCulture)}|{line}");
-			_streamWriter.Flush();
+			// _streamWriter.WriteLine($"{DateTime.Now.ToString(CultureInfo.InvariantCulture)}|{line}");
+			// _streamWriter.Flush();
+			Console.WriteLine(line);
 		}
 	}
 }

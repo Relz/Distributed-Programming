@@ -29,7 +29,7 @@ runProcess()
 	for (( i=0; i < $3; ++i ))
 	do
 		processID=-1
-		xterm -hold -e "dotnet $1/$1.dll $2" & processID=$!
+		xterm -hold -e "cd $1 && dotnet $1.dll $2" & processID=$!
 		echo $processID >> "pid"
 	done
 }

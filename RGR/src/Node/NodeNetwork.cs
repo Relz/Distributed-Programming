@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ModelLibrary;
 using System;
+using NetMQ.Sockets;
 
 namespace Node
 {
@@ -47,7 +48,7 @@ namespace Node
 				string logMessage = $"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.NodePort}";
 				try
 				{
-					nodeModel.NodeSocket = new NetMQ.Sockets.PushSocket($">tcp://127.0.0.1:{nodeModel.NodePort}");
+					nodeModel.NodeSocket = new PushSocket($">tcp://127.0.0.1:{nodeModel.NodePort}");
 				}
 				catch (Exception)
 				{
@@ -66,7 +67,7 @@ namespace Node
 			string logMessage = $"Binding to tcp: 127.0.0.1:{me.ManagingPort}";
 			try
 			{
-				me.ManagingSocket = new NetMQ.Sockets.PairSocket($"@tcp://127.0.0.1:{me.ManagingPort}");
+				me.ManagingSocket = new PairSocket($"@tcp://127.0.0.1:{me.ManagingPort}");
 			}
 			catch (Exception)
 			{
@@ -79,7 +80,7 @@ namespace Node
 			logMessage = $"Binding to tcp: 127.0.0.1:{me.NodePort}";
 			try
 			{
-				me.NodeSocket = new NetMQ.Sockets.RouterSocket($"@tcp://127.0.0.1:{me.NodePort}");
+				me.NodeSocket = new RouterSocket($"@tcp://127.0.0.1:{me.NodePort}");
 			}
 			catch (Exception)
 			{

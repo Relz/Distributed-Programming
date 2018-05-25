@@ -2,7 +2,9 @@
 using NetMQ;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using ModelLibrary;
+using LogFileLibrary;
 
 namespace Node
 {
@@ -15,7 +17,7 @@ namespace Node
 		private static NodeModel me = new NodeModel();
 		private static NodeNetwork _nodeNetwork;
 		private static readonly IDictionary<string, ISet<int>> Services = new Dictionary<string, ISet<int>>();
-		private static LogFileLibrary.LogFile _logFile;
+		private static LogFile _logFile;
 
 		private static void Main(string[] args)
 		{
@@ -25,12 +27,12 @@ namespace Node
 				return;
 			}
 
-			_logFile = new LogFileLibrary.LogFile($"{me.Name}.log");
+			_logFile = new LogFile($"{me.Name}.log");
 			_nodeNetwork = new NodeNetwork(_logFile);
 			ReadConfig();
 			_nodeNetwork.Start(me);
-			System.Threading.Tasks.Task.Factory.StartNew(state => ServerActivity(), string.Format($"Server {me.Name}"), System.Threading.Tasks.TaskCreationOptions.LongRunning);
-			System.Threading.Tasks.Task.Factory.StartNew(state => NodeActivity(), string.Format($"Node {me.Name}"), System.Threading.Tasks.TaskCreationOptions.LongRunning);
+			Task.Factory.StartNew(state => ServerActivity(), string.Format($"Server {me.Name}"), TaskCreationOptions.LongRunning);
+			Task.Factory.StartNew(state => NodeActivity(), string.Format($"Node {me.Name}"), TaskCreationOptions.LongRunning);
 
 			System.Console.ReadKey();
 		}
@@ -41,7 +43,7 @@ namespace Node
 			{
 				return false;
 			}
-			me.Name = Enumerable.ElementAt(args, 0);
+			me.Name = args.ElementAt(0);
 			return true;
 		}
 
@@ -85,7 +87,7 @@ namespace Node
 						break;
 					case "START":
 						_nodeNetwork.SendFrame(message);
-						CollectionExtensions.TryAdd(Services, command[1], new HashSet<int>());
+						Services.TryAdd(command[1], new HashSet<int>());
 						me.ManagingSocket.SendFrame(int.TryParse(command[2], out var port) && Services[command[1]].Add(port) ? Success : Failure);
 						break;
 					case "STOP":
@@ -106,7 +108,7 @@ namespace Node
 				switch (command[0])
 				{
 					case "START":
-						CollectionExtensions.TryAdd(Services, command[1], new HashSet<int>());
+						Services.TryAdd(command[1], new HashSet<int>());
 						int.TryParse(command[2], out var port);
 						Services[command[1]].Add(port);
 						break;

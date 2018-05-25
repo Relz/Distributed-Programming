@@ -80,14 +80,14 @@ namespace NodeManager
 			Console.WriteLine("Available nodes:");
 			for (var i = 0; i < Nodes.Count; ++i)
 			{
-				NodeModel nodeModel = Enumerable.ElementAt(Nodes, i);
-				Console.WriteLine($"{(i + 1).ToString()}. {nodeModel.Name}({nodeModel.NodePort})");
+				NodeModel nodeModel = Nodes.ElementAt(i);
+				Console.WriteLine($"{(i + 1).ToString()}. {nodeModel.Name}({nodeModel.ManagingPort})");
 			}
 		}
 
 		private static bool DoesHandshakeSucceeded(NodeModel nodeModel)
 		{
-			return nodeModel.ManagingSocket.TrySendFrame(TimeSpan.FromSeconds(3), message: "PING") && nodeModel.ManagingSocket.TryReceiveFrameString(TimeSpan.FromSeconds(3), out _);
+			return nodeModel.ManagingSocket.TrySendFrame(TimeSpan.FromSeconds(3), "PING") && nodeModel.ManagingSocket.TryReceiveFrameString(TimeSpan.FromSeconds(3), out _);
 		}
 
 		private static void InitializeCommandValidator(CommandValidator commandValidator)
