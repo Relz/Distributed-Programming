@@ -1,0 +1,18 @@
+{
+	"0": {
+		"ManagerPort": 49300,
+		"NodePort": 49200
+	},
+	"1": {
+		"ManagerPort": 49301,
+		"NodePort": 49201
+	},
+	"2": {
+		"ManagerPort": 49302,
+		"NodePort": 49202
+	},
+	"3": {
+		"ManagerPort": 49303,
+		"NodePort": 49203
+	}
+}

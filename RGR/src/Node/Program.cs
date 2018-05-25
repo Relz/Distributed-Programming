@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using LogFileLibrary;
-using Newtonsoft.Json.Linq;
-using ModelLibrary;
+﻿using System.Linq;
 using NetMQ;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using ModelLibrary;
 
 namespace Node
 {
@@ -19,24 +15,24 @@ namespace Node
 		private static NodeModel me = new NodeModel();
 		private static NodeNetwork _nodeNetwork;
 		private static readonly IDictionary<string, ISet<int>> Services = new Dictionary<string, ISet<int>>();
-		private static LogFile _logFile;
+		private static LogFileLibrary.LogFile _logFile;
 
 		private static void Main(string[] args)
 		{
 			if (!GetNodeNameFromArguments(args))
 			{
-				Console.WriteLine("Error: Node name not specified");
+				System.Console.WriteLine("Error: Node name not specified");
 				return;
 			}
-			
-			_logFile = new LogFile($"{me.Name}.log");
+
+			_logFile = new LogFileLibrary.LogFile($"{me.Name}.log");
 			_nodeNetwork = new NodeNetwork(_logFile);
 			ReadConfig();
 			_nodeNetwork.Start(me);
-			Task.Factory.StartNew(state => ServerActivity(), string.Format($"Server {me.Name}"), TaskCreationOptions.LongRunning);
-			Task.Factory.StartNew(state => NodeActivity(), string.Format($"Node {me.Name}"), TaskCreationOptions.LongRunning);
-			
-			Console.ReadKey();
+			System.Threading.Tasks.Task.Factory.StartNew(state => ServerActivity(), string.Format($"Server {me.Name}"), System.Threading.Tasks.TaskCreationOptions.LongRunning);
+			System.Threading.Tasks.Task.Factory.StartNew(state => NodeActivity(), string.Format($"Node {me.Name}"), System.Threading.Tasks.TaskCreationOptions.LongRunning);
+
+			System.Console.ReadKey();
 		}
 
 		private static bool GetNodeNameFromArguments(string[] args)
@@ -45,23 +41,25 @@ namespace Node
 			{
 				return false;
 			}
-			me.Name = args.ElementAt(0);
+			me.Name = Enumerable.ElementAt(args, 0);
 			return true;
 		}
 
 		private static void ReadConfig()
 		{
-			JObject config = JObject.Parse(File.ReadAllText(ConfigFileName));
-			foreach (var (name, portToken) in config)
+			JObject config = JObject.Parse(System.IO.File.ReadAllText(ConfigFileName));
+			foreach (var (name, portsToken) in config)
 			{
-				var port = portToken.Value<string>();
+				string managingPort = portsToken.SelectToken("ManagerPort").Value<string>();
+				string nodePort = portsToken.SelectToken("NodePort").Value<string>();
 				if (name == me.Name)
 				{
-					me.Port = port;
+					me.ManagingPort = managingPort;
+					me.NodePort = nodePort;
 				}
 				else
 				{
-					_nodeNetwork.Add(new NodeModel(name, port));
+					_nodeNetwork.Add(new NodeModel(name, managingPort, nodePort));
 				}
 			}
 		}
@@ -87,7 +85,7 @@ namespace Node
 						break;
 					case "START":
 						_nodeNetwork.SendFrame(message);
-						Services.TryAdd(command[1], new HashSet<int>());
+						CollectionExtensions.TryAdd(Services, command[1], new HashSet<int>());
 						me.ManagingSocket.SendFrame(int.TryParse(command[2], out var port) && Services[command[1]].Add(port) ? Success : Failure);
 						break;
 					case "STOP":
@@ -102,13 +100,13 @@ namespace Node
 		{
 			while (true)
 			{
-				string message = me.Socket.ReceiveMultipartStrings().ElementAt(1);
+				string message = me.NodeSocket.ReceiveMultipartStrings().ElementAt(1);
 				_logFile.AddLine($"Received message from Node: {message}");
 				string[] command = message.Split(' ');
 				switch (command[0])
 				{
 					case "START":
-						Services.TryAdd(command[1], new HashSet<int>());
+						CollectionExtensions.TryAdd(Services, command[1], new HashSet<int>());
 						int.TryParse(command[2], out var port);
 						Services[command[1]].Add(port);
 						break;

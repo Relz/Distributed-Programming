@@ -1,19 +1,17 @@
-﻿using System;
+﻿using NetMQ;
 using System.Collections;
 using System.Collections.Generic;
-using LogFileLibrary;
 using ModelLibrary;
-using NetMQ;
-using NetMQ.Sockets;
+using System;
 
 namespace Node
 {
 	public class NodeNetwork : IEnumerable<KeyValuePair<string, NodeModel>>
 	{
 		private readonly IDictionary<string, NodeModel> _nodes = new Dictionary<string, NodeModel>();
-		private readonly LogFile _logFile;
+		private readonly LogFileLibrary.LogFile _logFile;
 
-		public NodeNetwork(LogFile logFile)
+		public NodeNetwork(LogFileLibrary.LogFile logFile)
 		{
 			_logFile = logFile;
 		}
@@ -37,7 +35,7 @@ namespace Node
 		{
 			foreach (var (_, nodeModel) in _nodes)
 			{
-				nodeModel.Socket.SendFrame(message);
+				nodeModel.NodeSocket.SendFrame(message);
 			}
 		}
 
@@ -46,10 +44,10 @@ namespace Node
 			StartMyself(me);
 			foreach (var (_, nodeModel) in _nodes)
 			{
-				string logMessage = $"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.Port}";
+				string logMessage = $"Creating connection tc tcp socket: 127.0.0.1:{nodeModel.NodePort}";
 				try
 				{
-					nodeModel.Socket = new PushSocket($">tcp://127.0.0.1:{nodeModel.Port}");
+					nodeModel.NodeSocket = new NetMQ.Sockets.PushSocket($">tcp://127.0.0.1:{nodeModel.NodePort}");
 				}
 				catch (Exception)
 				{
@@ -65,10 +63,10 @@ namespace Node
 
 		private void StartMyself(NodeModel me)
 		{
-			string logMessage = $"Binding to tcp: 127.0.0.1:{me.Port}1";
+			string logMessage = $"Binding to tcp: 127.0.0.1:{me.ManagingPort}";
 			try
 			{
-				me.ManagingSocket = new PairSocket($"@tcp://127.0.0.1:{me.Port}1");
+				me.ManagingSocket = new NetMQ.Sockets.PairSocket($"@tcp://127.0.0.1:{me.ManagingPort}");
 			}
 			catch (Exception)
 			{
@@ -78,10 +76,10 @@ namespace Node
 			}
 			logMessage += " [OK]";
 			_logFile.AddLine(logMessage);
-			logMessage = $"Binding to tcp: 127.0.0.1:{me.Port}";
+			logMessage = $"Binding to tcp: 127.0.0.1:{me.NodePort}";
 			try
 			{
-				me.Socket = new RouterSocket($"@tcp://127.0.0.1:{me.Port}");
+				me.NodeSocket = new NetMQ.Sockets.RouterSocket($"@tcp://127.0.0.1:{me.NodePort}");
 			}
 			catch (Exception)
 			{

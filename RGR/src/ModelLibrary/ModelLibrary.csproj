@@ -7,4 +7,7 @@
       <HintPath>C:\Users\alexey.starovoitov\.nuget\packages\netmq\4.0.0.156-pre\lib\netstandard1.3\NetMQ.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NetMQ" Version="4.0.0.156-pre" />
+  </ItemGroup>
 </Project>

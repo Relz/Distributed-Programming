@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using ModelLibrary;
+﻿using System.Linq;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using ModelLibrary;
+using System;
 
 namespace NodeManager
 {
 	internal static class Program
 	{
 		private const string ConfigFileName = "../config.json";
-		
+
 		private static readonly List<NodeModel> Nodes = new List<NodeModel>();
-		
+
 		private static void Main()
 		{
 			ReadConfig();
@@ -37,10 +34,10 @@ namespace NodeManager
 				NodeModel nodeModel = Nodes.ElementAt(nodeSerialNumber - 1);
 				if (nodeModel.ManagingSocket == null)
 				{
-					Console.Write($"Creating connection to tcp socket: 127.0.0.1:{nodeModel.Port}1");
+					Console.Write($"Creating connection to tcp socket: 127.0.0.1:{nodeModel.ManagingPort}");
 					try
 					{
-						nodeModel.ManagingSocket = new PairSocket($">tcp://127.0.0.1:{nodeModel.Port}1");
+						nodeModel.ManagingSocket = new PairSocket($">tcp://127.0.0.1:{nodeModel.ManagingPort}");
 					}
 					catch (Exception e)
 					{
@@ -69,11 +66,12 @@ namespace NodeManager
 
 		private static void ReadConfig()
 		{
-			JObject config = JObject.Parse(File.ReadAllText(ConfigFileName));
-			foreach (var (name, portToken) in config)
+			JObject config = JObject.Parse(System.IO.File.ReadAllText(ConfigFileName));
+			foreach (var (name, portsToken) in config)
 			{
-				var port = portToken.Value<string>();
-				Nodes.Add(new NodeModel(name, port));
+				string managingPort = portsToken.SelectToken("ManagerPort").Value<string>();
+				string nodePort = portsToken.SelectToken("NodePort").Value<string>();
+				Nodes.Add(new NodeModel(name, managingPort, nodePort));
 			}
 		}
 
@@ -82,14 +80,14 @@ namespace NodeManager
 			Console.WriteLine("Available nodes:");
 			for (var i = 0; i < Nodes.Count; ++i)
 			{
-				NodeModel nodeModel = Nodes.ElementAt(i);
-				Console.WriteLine($"{(i + 1).ToString()}. {nodeModel.Name}({nodeModel.Port})");
+				NodeModel nodeModel = Enumerable.ElementAt(Nodes, i);
+				Console.WriteLine($"{(i + 1).ToString()}. {nodeModel.Name}({nodeModel.NodePort})");
 			}
 		}
 
 		private static bool DoesHandshakeSucceeded(NodeModel nodeModel)
 		{
-			return nodeModel.ManagingSocket.TrySendFrame(TimeSpan.FromSeconds(3), "PING") && nodeModel.ManagingSocket.TryReceiveFrameString(TimeSpan.FromSeconds(3), out _);
+			return nodeModel.ManagingSocket.TrySendFrame(TimeSpan.FromSeconds(3), message: "PING") && nodeModel.ManagingSocket.TryReceiveFrameString(TimeSpan.FromSeconds(3), out _);
 		}
 
 		private static void InitializeCommandValidator(CommandValidator commandValidator)
