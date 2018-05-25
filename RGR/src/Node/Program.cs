@@ -2,6 +2,7 @@
 using NetMQ;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using ModelLibrary;
 using LogFileLibrary;
@@ -13,10 +14,11 @@ namespace Node
 		private const string ConfigFileName = "../config.json";
 		private const string Success = "Success";
 		private const string Failure = "Failure";
+		private static readonly ISet<string> serviceNames = new HashSet<string> {"Multiplier"};
 
 		private static NodeModel me = new NodeModel();
 		private static NodeNetwork _nodeNetwork;
-		private static readonly IDictionary<string, ISet<int>> Services = new Dictionary<string, ISet<int>>();
+		private static readonly IDictionary<string, ISet<KeyValuePair<int, Process>>> Services = new Dictionary<string, ISet<KeyValuePair<int, Process>>>();
 		private static LogFile _logFile;
 
 		private static void Main(string[] args)
@@ -66,6 +68,11 @@ namespace Node
 			}
 		}
 
+		private static IEnumerable<int> GetPorts(ISet<KeyValuePair<int, Process>> portsWithProcesses)
+		{
+			return portsWithProcesses.Select(portWithProcess => portWithProcess.Key);
+		}
+
 		private static void ServerActivity()
 		{
 			while (true)
@@ -82,17 +89,43 @@ namespace Node
 						me.ManagingSocket.SendFrameEmpty();
 						break;
 					case "WHERE":
-						Services.TryGetValue(command[1], out var serviceAddresses);
-						me.ManagingSocket.SendFrame(serviceAddresses == null ? "" : string.Join(", ", serviceAddresses));
+						Services.TryGetValue(command[1], out var servicePortsWithProcesses);
+						me.ManagingSocket.SendFrame(servicePortsWithProcesses == null ? "" : string.Join(", ", GetPorts(servicePortsWithProcesses)));
 						break;
 					case "START":
+						if (!serviceNames.Contains(command[1]))
+						{
+							me.ManagingSocket.SendFrame(Failure);
+							break;
+						}
+
 						_nodeNetwork.SendFrame(message);
-						Services.TryAdd(command[1], new HashSet<int>());
-						me.ManagingSocket.SendFrame(int.TryParse(command[2], out var port) && Services[command[1]].Add(port) ? Success : Failure);
+						Services.TryAdd(command[1], new HashSet<KeyValuePair<int, Process>>());
+						if (int.TryParse(command[2], out var port) && Services[command[1]].Add(new KeyValuePair<int, Process>(port, StartService(command[1], command[2]))))
+						{
+							me.ManagingSocket.SendFrame(Success);
+						}
+						else
+						{
+							me.ManagingSocket.SendFrame(Failure);
+						}
 						break;
 					case "STOP":
 						_nodeNetwork.SendFrame(message);
-						me.ManagingSocket.SendFrame(Services.ContainsKey(command[1]) && Services[command[1]].Remove(int.Parse(command[2])) ? Success : Failure);
+						if (Services.ContainsKey(command[1]))
+						{
+							var portToRemove = int.Parse(command[2]);
+							foreach (var portToProcess in Services[command[1]])
+							{
+								if (portToProcess.Key == portToRemove)
+								{
+									portToProcess.Value?.Kill();
+									me.ManagingSocket.SendFrame(Services[command[1]].Remove(portToProcess) ? Success : Failure);
+									break;
+								}
+							}
+							me.ManagingSocket.SendFrame(Failure);
+						}
 						break;
 				}
 			}
@@ -108,18 +141,46 @@ namespace Node
 				switch (command[0])
 				{
 					case "START":
-						Services.TryAdd(command[1], new HashSet<int>());
+						Services.TryAdd(command[1], new HashSet<KeyValuePair<int, Process>>());
 						int.TryParse(command[2], out var port);
-						Services[command[1]].Add(port);
+						Services[command[1]].Add(new KeyValuePair<int, Process>(port, null));
 						break;
 					case "STOP":
 						if (Services.ContainsKey(command[1]))
 						{
-							Services[command[1]].Remove(int.Parse(command[2]));
+							var portToRemove = int.Parse(command[2]);
+							foreach (var portToProcess in Services[command[1]])
+							{
+								if (portToProcess.Key == portToRemove)
+								{
+									portToProcess.Value?.Kill();
+									Services[command[1]].Remove(portToProcess);
+									break;
+								}
+							}
 						}
 						break;
 				}
 			}
+		}
+
+		private static Process StartService(string name, string port)
+		{
+			var process = new Process
+			{
+				StartInfo = new ProcessStartInfo
+				{
+					FileName = "dotnet",
+					Arguments = $"../{name}/{name}.dll {port}",
+					UseShellExecute = true,
+					RedirectStandardOutput = false,
+					RedirectStandardError = false,
+					CreateNoWindow = true
+				}
+			};
+
+			process.Start();
+			return process;
 		}
 	}
 }

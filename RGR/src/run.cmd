@@ -2,6 +2,7 @@
 setlocal enableDelayedExpansion
 
 set processNames=
+set processArguments=
 set processCounts=
 set /a programCount=1
 
@@ -12,15 +13,20 @@ exit /B %ERRORLEVEL%
 
 :readProcesses
 	set /a result=1
-	set /a flag=1
-	for /f %%G in ('jq ".process[] | (.name, .count)" config/config.json') do (
-		if !flag! EQU 1 (
-			set /a flag=0
+	set /a flag=0
+	for /f %%G in ('jq ".process[] | (.name, .arguments, .count)" config/config.json') do (
+		if !flag! EQU 0 (
+			set /a flag=1
 			set processNames[!result!]=%%G
 		) else (
-			set /a flag=1
-			set processCounts[!result!]=%%G
-			set /a result+=1
+			if !flag! EQU 1 (
+				set /a flag=2
+				set processArguments[!result!]=%%G
+			) else (
+				set /a flag=0
+				set processCounts[!result!]=%%G
+				set /a result+=1
+			)
 		)
 	)
 	set /a result-=1
@@ -28,13 +34,13 @@ exit /B %ERRORLEVEL%
 exit /B 0
 
 :runProcess
-	for /l %%a in (1, 1, %~2) do (
-		start dotnet %~1/%~1.dll --configuration Release --launch-profile Production
+	for /l %%a in (1, 1, %~3) do (
+		start "%~1 %~2" cmd /c "cd %~1 && dotnet %~1.dll %~2"
 	)
 exit /B 0
 
 :runProcesses
 	for /l %%a in (1, 1, !%~1!) do (
-		call :runProcess !processNames[%%a]! !processCounts[%%a]!
+		call :runProcess !processNames[%%a]! !processArguments[%%a]! !processCounts[%%a]!
 	)
 exit /B 0
