@@ -34,20 +34,12 @@ set scriptPath="%cd%"
 
 mkdir %scriptPath%\%buildDirectory%
 
-call :packLibrary "ConstantLibrary"
 call :packLibrary "ModelLibrary"
-call :packLibrary "RabbitMqLibrary"
-call :packLibrary "RedisLibrary"
+call :packLibrary "LogFileLibrary"
 
-call :buildProgram "Frontend"
-call :buildProgram "Backend"
-call :buildProgram "TextListener"
-call :buildProgram "TextRankCalc"
-call :buildProgram "VowelConsonantCounter"
-call :buildProgram "VowelConsonantRater"
-call :buildProgram "TextStatistics"
-call :buildProgram "TextProcessingLimiter"
-call :buildProgram "TextSuccessMarker"
+call :buildProgram "Node"
+call :buildProgram "NodeManager"
+call :buildProgram "Multiplier"
 
 cd %scriptPath%
 
@@ -55,6 +47,7 @@ call :copy "run.sh" "F"
 call :copy "run.cmd" "F"
 call :copy "stop.sh" "F"
 call :copy "stop.cmd" "F"
+call :copy "config.json" "F"
 call :copy "config" "D"
 
 exit /B %ERRORLEVEL%
