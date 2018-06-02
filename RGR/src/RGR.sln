@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogFileLibrary", "LogFileLi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Multiplier", "Multiplier\Multiplier.csproj", "{073E8F52-1CE3-4CFE-A7BA-66B72BB243A6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{120AC6C3-7BFC-42F9-8B4D-EF191C8D7207}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{073E8F52-1CE3-4CFE-A7BA-66B72BB243A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{073E8F52-1CE3-4CFE-A7BA-66B72BB243A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{073E8F52-1CE3-4CFE-A7BA-66B72BB243A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{120AC6C3-7BFC-42F9-8B4D-EF191C8D7207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{120AC6C3-7BFC-42F9-8B4D-EF191C8D7207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{120AC6C3-7BFC-42F9-8B4D-EF191C8D7207}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{120AC6C3-7BFC-42F9-8B4D-EF191C8D7207}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

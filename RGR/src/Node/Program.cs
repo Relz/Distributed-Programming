@@ -92,6 +92,9 @@ namespace Node
 						Services.TryGetValue(command[1], out var servicePortsWithProcesses);
 						me.ManagingSocket.SendFrame(servicePortsWithProcesses == null ? "" : string.Join(", ", GetPorts(servicePortsWithProcesses)));
 						break;
+					case "WHERE_ALL":
+						me.ManagingSocket.SendFrame(ServicesToJson(Services));
+						break;
 					case "START":
 						if (!serviceNames.Contains(command[1]))
 						{
@@ -129,6 +132,12 @@ namespace Node
 						break;
 				}
 			}
+		}
+
+		private static string ServicesToJson(IDictionary<string, ISet<KeyValuePair<int, Process>>> dictionary)
+		{
+			var entries = dictionary.Select(d => string.Format("\"{0}\": [{1}]", d.Key,  string.Join(", ", d.Value.Select(s => s.Key))));
+			return "{" + string.Join(",", entries) + "}";
 		}
 
 		private static void NodeActivity()
@@ -172,7 +181,7 @@ namespace Node
 				{
 					FileName = "dotnet",
 					Arguments = $"../{name}/{name}.dll {port}",
-					UseShellExecute = true,
+					UseShellExecute = false,
 					RedirectStandardOutput = false,
 					RedirectStandardError = false,
 					CreateNoWindow = true

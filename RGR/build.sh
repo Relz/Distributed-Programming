@@ -43,7 +43,8 @@ libraries=(
 programs=(
 	"Node"
 	"NodeManager"
-	"Multiplier" )
+	"Multiplier"
+	"Client" )
 
 elementsToCopy=(
 	"run.sh"

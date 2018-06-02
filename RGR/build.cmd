@@ -40,6 +40,7 @@ call :packLibrary "LogFileLibrary"
 call :buildProgram "Node"
 call :buildProgram "NodeManager"
 call :buildProgram "Multiplier"
+call :buildProgram "Client"
 
 cd %scriptPath%
 

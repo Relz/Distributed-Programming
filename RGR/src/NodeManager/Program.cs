@@ -93,6 +93,7 @@ namespace NodeManager
 		private static void InitializeCommandValidator(CommandValidator commandValidator)
 		{
 			commandValidator.Add("WHERE", 1, "Command signature: WHERE <service_name>");
+			commandValidator.Add("WHERE_ALL", 0, "Command signature: WHERE_ALL");
 			commandValidator.Add("START", 2, "Command signature: START <service_name> <port>");
 			commandValidator.Add("STOP", 2, "Command signature: STOP <service_name> <port>");
 			commandValidator.Add("BYE", 0, "Command signature: BYE");
